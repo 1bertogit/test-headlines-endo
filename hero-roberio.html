@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste A/B de Headlines - Cirurgia Facial</title>
+    <style>
+        :root {
+            --primary: #0f172a; /* Azul Profundo */
+            --accent: #c4a05e; /* Dourado/Bronze Premium */
+            --bg-light: #f8fafc;
+            --text-dark: #334155;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            overflow: hidden;
+        }
+
+        /* Sidebar de Controle */
+        .sidebar {
+            width: 320px;
+            background-color: var(--primary);
+            color: var(--white);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            box-shadow: 4px 0 15px rgba(0,0,0,0.1);
+            overflow-y: auto;
+            z-index: 10;
+        }
+
+        .sidebar h2 {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 10px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .variation-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #cbd5e1;
+            padding: 15px;
+            text-align: left;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .variation-btn:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: var(--accent);
+        }
+
+        .variation-btn.active {
+            background: var(--accent);
+            color: var(--primary);
+            font-weight: bold;
+            border-color: var(--accent);
+            box-shadow: 0 4px 12px rgba(196, 160, 94, 0.3);
+        }
+
+        .variation-label {
+            font-size: 0.75rem;
+            display: block;
+            opacity: 0.8;
+            margin-bottom: 4px;
+        }
+
+        .variation-title {
+            font-size: 0.95rem;
+        }
+
+        /* Área de Visualização (Preview) */
+        .preview-area {
+            flex: 1;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Simulação da Landing Page */
+        .landing-mockup {
+            flex: 1;
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            display: flex;
+            align-items: center;
+            padding: 60px 80px;
+            position: relative;
+        }
+
+        /* Elemento decorativo de fundo */
+        .landing-mockup::before {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 45%;
+            background-color: #cbd5e1;
+            background-image: url('https://images.unsplash.com/photo-1579684385127-1ef15d508118?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'); /* Imagem médica genérica */
+            background-size: cover;
+            background-position: center;
+            opacity: 0.5;
+            mask-image: linear-gradient(to left, black 60%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to left, black 60%, transparent 100%);
+        }
+
+        .content-box {
+            max-width: 650px;
+            position: relative;
+            z-index: 2;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .badge {
+            display: inline-block;
+            background-color: rgba(15, 23, 42, 0.1);
+            color: var(--primary);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        h1 {
+            font-family: 'Georgia', serif; /* Serifada para autoridade */
+            font-size: 3rem;
+            line-height: 1.1;
+            color: var(--primary);
+            margin-bottom: 24px;
+        }
+
+        p {
+            font-size: 1.15rem;
+            line-height: 1.6;
+            color: #475569;
+            margin-bottom: 32px;
+            border-left: 3px solid var(--accent);
+            padding-left: 20px;
+        }
+
+        .cta-button {
+            background-color: var(--accent);
+            color: var(--white);
+            border: none;
+            padding: 16px 32px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* Painel de Estratégia */
+        .strategy-panel {
+            height: 200px;
+            background: var(--white);
+            border-top: 1px solid #e2e8f0;
+            padding: 20px 40px;
+            display: flex;
+            gap: 40px;
+            align-items: center;
+        }
+
+        .stat-box {
+            flex: 1;
+        }
+
+        .stat-box h3 {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .stat-box p {
+            font-size: 1rem;
+            color: var(--primary);
+            border: none;
+            padding: 0;
+            margin: 0;
+            font-weight: 500;
+        }
+
+        /* Tabela de Recomendação */
+        .rec-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+        .rec-table th { text-align: left; color: #64748b; padding-bottom: 8px; border-bottom: 1px solid #e2e8f0; }
+        .rec-table td { padding: 8px 0; color: #334155; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 900px) {
+            body { flex-direction: column; height: auto; overflow: auto; }
+            .sidebar { width: 100%; height: auto; box-sizing: border-box;}
+            .landing-mockup { padding: 40px 20px; min-height: 500px; }
+            .landing-mockup::before { display: none; }
+            h1 { font-size: 2rem; }
+            .strategy-panel { flex-direction: column; height: auto; align-items: flex-start; gap: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h2>Seletor de Variação</h2>
+        <div class="control-group" id="button-container">
+            </div>
+        
+        <div style="margin-top: 30px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
+            <small style="color: #94a3b8; display: block; margin-bottom: 10px;">ESTRATÉGIA DE TESTE SUGERIDA:</small>
+            <table class="rec-table" style="color: #cbd5e1;">
+                <tr>
+                    <th style="color: var(--accent);">Teste</th>
+                    <th style="color: var(--accent);">Variação</th>
+                </tr>
+                <tr><td>1</td><td>Original vs C</td></tr>
+                <tr><td>2</td><td>Original vs B</td></tr>
+                <tr><td>3</td><td>C vs F</td></tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="preview-area">
+        
+        <div class="landing-mockup">
+            <div class="content-box" id="content-container">
+                <span class="badge" id="badge-text">Método Exclusivo</span>
+                <h1 id="headline">Selecione uma variação ao lado</h1>
+                <p id="subheadline">Veja como o texto se comporta no layout final.</p>
+                <button class="cta-button">Conhecer o Método</button>
+            </div>
+        </div>
+
+        <div class="strategy-panel">
+            <div class="stat-box">
+                <h3>Variação Selecionada</h3>
+                <p id="current-var-name">-</p>
+            </div>
+            <div class="stat-box" style="flex: 2;">
+                <h3>Gatilho Psicológico / Hipótese</h3>
+                <p id="current-hypothesis">-</p>
+            </div>
+            <div class="stat-box">
+                <h3>Foco</h3>
+                <p id="current-focus">-</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dados das Headlines
+        const variations = {
+            'A': {
+                name: 'Variação A',
+                type: 'Provocação Direta',
+                headline: 'O Deep Plane Tradicional Está Ultrapassado.<br>E Você Sabe Disso.',
+                subheadline: 'A técnica que revolucionou a cirurgia facial há 30 anos não foi feita para a face moderna — cheia de bioestimuladores, preenchedores e pacientes que não podem ficar 6 semanas em recuperação. Existe um caminho melhor.',
+                hypothesis: 'Desafiar o conhecimento atual cria uma "falha" cognitiva que exige resolução (curiosidade imediata).',
+                focus: 'Quebra de Padrão'
+            },
+            'B': {
+                name: 'Variação B',
+                type: 'Dor + Aspiração',
+                headline: 'Você Domina Mama e Abdômen.<br>Mas a Face Ainda Te Assusta.',
+                subheadline: 'E enquanto você hesita, outros cirurgiões — alguns com menos experiência que você — estão se tornando referências. A diferença não é talento. É método.',
+                hypothesis: 'Espelhamento emocional gera conexão instantânea. Admição de uma insegurança oculta valida a autoridade de quem fala.',
+                focus: 'Medo / Insegurança'
+            },
+            'C': {
+                name: 'Variação C',
+                type: 'Resultado Específico',
+                headline: 'Plano Profundo. Anestesia Local.<br>Recuperação em 7 Dias.',
+                subheadline: 'Mais de 1.000 cirurgias faciais. Taxa de complicação inferior a 3%. Descubra o método que cirurgiões céticos estão chamando de "impossível" — até verem os resultados.',
+                hypothesis: 'Para céticos, dados concretos vencem promessas vagas. A especificidade (7 dias, 3%) aumenta a credibilidade.',
+                focus: 'Prova Lógica'
+            },
+            'D': {
+                name: 'Variação D',
+                type: 'Pergunta Provocadora',
+                headline: 'E Se Tudo Que Você Aprendeu Sobre Cirurgia Facial Estivesse Errado?',
+                subheadline: 'Não errado por incompetência. Errado porque a face mudou — e as técnicas tradicionais não acompanharam. Descubra o terceiro caminho que ninguém te ensinou na residência.',
+                hypothesis: 'Engajamento através do questionamento da autoridade educacional (residência). Abre a mente para "novas verdades".',
+                focus: 'Reeducação'
+            },
+            'E': {
+                name: 'Variação E',
+                type: 'Exclusividade + Autoridade',
+                headline: 'Por Que os Cirurgiões Mais Requisitados do Brasil Estão Abandonando o Endoscópio?',
+                subheadline: 'A resposta está em uma técnica desenvolvida ao longo de 20 anos e mais de 1.000 cirurgias. Uma técnica que você não vai aprender em congressos. Até agora.',
+                hypothesis: 'O medo de ficar de fora (FOMO) combinado com o desejo de pertencer à elite ("mais requisitados").',
+                focus: 'Status / Elitismo'
+            },
+            'F': {
+                name: 'Variação F',
+                type: 'Inimigo Comum',
+                headline: 'A Formação Tradicional Te Deu Duas Opções: Risco Alto ou Equipamento Caro.',
+                subheadline: 'Nenhuma das duas faz sentido para a face moderna. Existe um terceiro caminho — e ele entrega resultados de plano profundo com anestesia local e recuperação em 7 dias.',
+                hypothesis: 'Unir o leitor contra um "inimigo" (o sistema, a formação tradicional) cria lealdade imediata à nova solução.',
+                focus: 'Nós contra Eles'
+            },
+            'G': {
+                name: 'Variação G',
+                type: 'Transformação (Identidade)',
+                headline: 'De Cirurgião Que Faz Face<br>Para Referência em Face Moderna.',
+                subheadline: 'A diferença entre operar rostos e dominar rostos está em um método. 20 anos de desenvolvimento. Mais de 1.000 casos. Uma jornada para a maestria.',
+                hypothesis: 'Apela para a autoimagem idealizada do cirurgião. Vende não a técnica, mas quem ele se tornará.',
+                focus: 'Identidade'
+            }
+        };
+
+        const container = document.getElementById('button-container');
+        const headlineEl = document.getElementById('headline');
+        const subheadlineEl = document.getElementById('subheadline');
+        const badgeEl = document.getElementById('badge-text');
+        const varNameEl = document.getElementById('current-var-name');
+        const hypoEl = document.getElementById('current-hypothesis');
+        const focusEl = document.getElementById('current-focus');
+        const contentBox = document.getElementById('content-container');
+
+        // Função para atualizar a view
+        function loadVariation(key) {
+            const data = variations[key];
+            
+            // Atualizar Botões
+            document.querySelectorAll('.variation-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`btn-${key}`).classList.add('active');
+
+            // Animação simples de troca
+            contentBox.style.opacity = 0;
+            contentBox.style.transform = 'translateY(10px)';
+            
+            setTimeout(() => {
+                headlineEl.innerHTML = data.headline;
+                subheadlineEl.innerText = data.subheadline;
+                badgeEl.innerText = data.type;
+                varNameEl.innerText = `${data.name} (${data.type})`;
+                hypoEl.innerText = data.hypothesis;
+                focusEl.innerText = data.focus;
+                
+                contentBox.style.opacity = 1;
+                contentBox.style.transform = 'translateY(0)';
+            }, 200);
+        }
+
+        // Gerar Botões
+        Object.keys(variations).forEach(key => {
+            const btn = document.createElement('div');
+            btn.className = 'variation-btn';
+            btn.id = `btn-${key}`;
+            btn.innerHTML = `
+                <span class="variation-label">${key} — ${variations[key].type}</span>
+                <span class="variation-title">${variations[key].focus}</span>
+            `;
+            btn.onclick = () => loadVariation(key);
+            container.appendChild(btn);
+        });
+
+        // Carregar inicial
+        loadVariation('C'); // Começa com a C pois é recomendada para céticos
+    </script>
+</body>
+</html>
