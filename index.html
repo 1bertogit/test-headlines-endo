@@ -1,0 +1,1689 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Método Face Moderna | Dr. Robério Brandão</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Raleway:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --midnight: #0a1628;
+      --navy: #1a2d4a;
+      --steel: #3d5a80;
+      --silver: #98a7b8;
+      --pearl: #e8ecf1;
+      --cream: #f8f9fa;
+      --gold: #c9a962;
+      --gold-light: #e8d5a3;
+      --gold-dark: #9a7b3a;
+      --white: #ffffff;
+      --font-display: 'Playfair Display', Georgia, serif;
+      --font-body: 'Raleway', sans-serif;
+    }
+
+```
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: 18px;
+  line-height: 1.8;
+  color: var(--navy);
+  background: var(--cream);
+  overflow-x: hidden;
+}
+
+/* Grain overlay */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  opacity: 0.025;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* Typography */
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+/* Sections */
+section {
+  padding: 120px 0;
+  position: relative;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 40px;
+}
+
+.container--narrow {
+  max-width: 800px;
+}
+
+/* Hero Section */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  background: linear-gradient(165deg, var(--midnight) 0%, var(--navy) 50%, var(--steel) 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 80%;
+  height: 200%;
+  background: radial-gradient(ellipse at center, rgba(201, 169, 98, 0.08) 0%, transparent 60%);
+  animation: pulse 8s ease-in-out infinite;
+}
+
+.hero::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 200px;
+  background: linear-gradient(to top, var(--cream), transparent);
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+
+.hero__content {
+  position: relative;
+  z-index: 2;
+  max-width: 900px;
+}
+
+.hero__badge {
+  display: inline-block;
+  padding: 8px 24px;
+  background: rgba(201, 169, 98, 0.15);
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 40px;
+  animation: fadeInUp 1s ease-out 0.2s both;
+}
+
+.hero__title {
+  font-size: clamp(42px, 6vw, 72px);
+  color: var(--white);
+  margin-bottom: 30px;
+  animation: fadeInUp 1s ease-out 0.4s both;
+}
+
+.hero__title span {
+  color: var(--gold);
+  font-style: italic;
+}
+
+.hero__subtitle {
+  font-size: clamp(18px, 2vw, 22px);
+  color: var(--silver);
+  font-weight: 300;
+  max-width: 700px;
+  margin-bottom: 50px;
+  animation: fadeInUp 1s ease-out 0.6s both;
+}
+
+.hero__cta {
+  animation: fadeInUp 1s ease-out 0.8s both;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 40px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn--primary {
+  background: var(--gold);
+  color: var(--midnight);
+}
+
+.btn--primary:hover {
+  background: var(--gold-light);
+  transform: translateY(-2px);
+  box-shadow: 0 20px 40px rgba(201, 169, 98, 0.3);
+}
+
+.btn--primary::after {
+  content: '→';
+  transition: transform 0.3s ease;
+}
+
+.btn--primary:hover::after {
+  transform: translateX(5px);
+}
+
+.btn--outline {
+  background: transparent;
+  color: var(--gold);
+  border: 1px solid var(--gold);
+}
+
+.btn--outline:hover {
+  background: var(--gold);
+  color: var(--midnight);
+}
+
+/* Section Headers */
+.section-header {
+  text-align: center;
+  margin-bottom: 80px;
+}
+
+.section-label {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--gold-dark);
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.section-label::before,
+.section-label::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 40px;
+  height: 1px;
+  background: var(--gold);
+}
+
+.section-label::before {
+  right: calc(100% + 20px);
+}
+
+.section-label::after {
+  left: calc(100% + 20px);
+}
+
+.section-title {
+  font-size: clamp(32px, 4vw, 52px);
+  color: var(--navy);
+  margin-bottom: 20px;
+}
+
+.section-subtitle {
+  font-size: 18px;
+  color: var(--steel);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Pain Section */
+.pain {
+  background: var(--white);
+  position: relative;
+}
+
+.pain::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--pearl), transparent);
+}
+
+.pain__content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: center;
+}
+
+.pain__text p {
+  margin-bottom: 24px;
+  color: var(--steel);
+}
+
+.pain__text p:first-of-type {
+  font-size: 24px;
+  color: var(--navy);
+  font-family: var(--font-display);
+  font-weight: 400;
+}
+
+.pain__highlight {
+  font-weight: 600;
+  color: var(--navy);
+}
+
+.pain__questions {
+  background: linear-gradient(135deg, var(--midnight) 0%, var(--navy) 100%);
+  padding: 60px;
+  position: relative;
+}
+
+.pain__questions::before {
+  content: '"';
+  position: absolute;
+  top: 20px;
+  left: 30px;
+  font-family: var(--font-display);
+  font-size: 120px;
+  color: var(--gold);
+  opacity: 0.2;
+  line-height: 1;
+}
+
+.pain__question {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-style: italic;
+  color: var(--pearl);
+  margin-bottom: 24px;
+  padding-left: 20px;
+  border-left: 2px solid var(--gold);
+}
+
+.pain__question:last-child {
+  margin-bottom: 0;
+}
+
+/* Problem Section */
+.problem {
+  background: var(--pearl);
+}
+
+.problem__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 40px;
+  margin-top: 60px;
+}
+
+.problem__card {
+  background: var(--white);
+  padding: 50px;
+  position: relative;
+  transition: all 0.4s ease;
+  border: 1px solid transparent;
+}
+
+.problem__card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 30px 60px rgba(26, 45, 74, 0.1);
+  border-color: var(--pearl);
+}
+
+.problem__card-number {
+  position: absolute;
+  top: -20px;
+  left: 40px;
+  font-family: var(--font-display);
+  font-size: 80px;
+  font-weight: 700;
+  color: var(--pearl);
+  line-height: 1;
+}
+
+.problem__card-title {
+  font-size: 24px;
+  color: var(--navy);
+  margin-bottom: 8px;
+  margin-top: 20px;
+}
+
+.problem__card-subtitle {
+  font-size: 14px;
+  color: var(--steel);
+  margin-bottom: 30px;
+}
+
+.problem__card-list {
+  list-style: none;
+}
+
+.problem__card-list li {
+  position: relative;
+  padding-left: 28px;
+  margin-bottom: 16px;
+  color: var(--steel);
+  font-size: 16px;
+}
+
+.problem__card-list li::before {
+  content: '×';
+  position: absolute;
+  left: 0;
+  color: #c0392b;
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.problem__conclusion {
+  text-align: center;
+  margin-top: 80px;
+  padding: 60px;
+  background: var(--white);
+  border-left: 4px solid var(--gold);
+}
+
+.problem__conclusion p {
+  font-family: var(--font-display);
+  font-size: 28px;
+  color: var(--navy);
+  margin-bottom: 16px;
+}
+
+.problem__conclusion p:last-child {
+  font-size: 20px;
+  color: var(--steel);
+  font-family: var(--font-body);
+  margin-bottom: 0;
+}
+
+/* Solution Section */
+.solution {
+  background: linear-gradient(180deg, var(--midnight) 0%, var(--navy) 100%);
+  color: var(--white);
+  position: relative;
+  overflow: hidden;
+}
+
+.solution::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1px;
+  height: 100px;
+  background: linear-gradient(to bottom, var(--gold), transparent);
+}
+
+.solution .section-title {
+  color: var(--white);
+}
+
+.solution .section-subtitle {
+  color: var(--silver);
+}
+
+.solution__intro {
+  max-width: 700px;
+  margin: 0 auto 80px;
+  text-align: center;
+}
+
+.solution__intro p {
+  color: var(--silver);
+  margin-bottom: 24px;
+}
+
+.triad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 40px;
+  margin-bottom: 80px;
+}
+
+.triad__item {
+  text-align: center;
+  padding: 60px 40px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(201, 169, 98, 0.2);
+  transition: all 0.4s ease;
+  position: relative;
+}
+
+.triad__item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--gold);
+  transform: translateY(-10px);
+}
+
+.triad__icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--gold);
+  border-radius: 50%;
+  font-family: var(--font-display);
+  font-size: 32px;
+  color: var(--gold);
+}
+
+.triad__title {
+  font-size: 20px;
+  color: var(--gold);
+  margin-bottom: 16px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.triad__desc {
+  color: var(--silver);
+  font-size: 16px;
+}
+
+.solution__skeptic {
+  text-align: center;
+  padding: 60px;
+  background: rgba(201, 169, 98, 0.1);
+  border-left: 4px solid var(--gold);
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.solution__skeptic p {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-style: italic;
+  color: var(--pearl);
+  margin-bottom: 20px;
+}
+
+.solution__skeptic span {
+  color: var(--silver);
+  font-size: 16px;
+}
+
+/* Proof Section */
+.proof {
+  background: var(--white);
+}
+
+.proof__stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 40px;
+  margin-bottom: 80px;
+}
+
+.proof__stat {
+  text-align: center;
+  padding: 40px 20px;
+  background: var(--cream);
+  position: relative;
+  overflow: hidden;
+}
+
+.proof__stat::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--gold);
+  transform: scaleX(0);
+  transition: transform 0.4s ease;
+}
+
+.proof__stat:hover::before {
+  transform: scaleX(1);
+}
+
+.proof__stat-number {
+  font-family: var(--font-display);
+  font-size: 56px;
+  color: var(--navy);
+  line-height: 1;
+  margin-bottom: 10px;
+}
+
+.proof__stat-number span {
+  color: var(--gold);
+}
+
+.proof__stat-label {
+  font-size: 14px;
+  color: var(--steel);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.proof__gallery {
+  background: var(--midnight);
+  padding: 80px;
+  text-align: center;
+  margin-bottom: 80px;
+}
+
+.proof__gallery-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  border: 2px dashed var(--steel);
+  color: var(--silver);
+  font-size: 18px;
+}
+
+/* Mentor Section */
+.mentor {
+  background: var(--cream);
+  position: relative;
+}
+
+.mentor__content {
+  display: grid;
+  grid-template-columns: 400px 1fr;
+  gap: 80px;
+  align-items: start;
+}
+
+.mentor__image {
+  position: relative;
+}
+
+.mentor__image-placeholder {
+  aspect-ratio: 3/4;
+  background: linear-gradient(135deg, var(--navy) 0%, var(--midnight) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--silver);
+  font-size: 16px;
+}
+
+.mentor__image::after {
+  content: '';
+  position: absolute;
+  bottom: -20px;
+  right: -20px;
+  width: 100%;
+  height: 100%;
+  border: 2px solid var(--gold);
+  z-index: -1;
+}
+
+.mentor__text h2 {
+  font-size: 42px;
+  color: var(--navy);
+  margin-bottom: 30px;
+}
+
+.mentor__quote {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-style: italic;
+  color: var(--steel);
+  padding: 30px;
+  border-left: 3px solid var(--gold);
+  margin-bottom: 40px;
+  background: var(--white);
+}
+
+.mentor__text p {
+  color: var(--steel);
+  margin-bottom: 24px;
+}
+
+.mentor__techniques {
+  margin-top: 40px;
+}
+
+.mentor__technique {
+  display: flex;
+  gap: 20px;
+  padding: 24px 0;
+  border-bottom: 1px solid var(--pearl);
+}
+
+.mentor__technique:last-child {
+  border-bottom: none;
+}
+
+.mentor__technique-icon {
+  width: 50px;
+  height: 50px;
+  background: var(--gold);
+  color: var(--midnight);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.mentor__technique-title {
+  font-weight: 600;
+  color: var(--navy);
+  margin-bottom: 4px;
+}
+
+.mentor__technique-desc {
+  font-size: 15px;
+  color: var(--steel);
+}
+
+/* Testimonials */
+.testimonials {
+  background: var(--white);
+}
+
+.testimonials__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 40px;
+}
+
+.testimonial {
+  padding: 50px;
+  background: var(--cream);
+  position: relative;
+  transition: all 0.4s ease;
+}
+
+.testimonial:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 30px 60px rgba(26, 45, 74, 0.08);
+}
+
+.testimonial::before {
+  content: '"';
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  font-family: var(--font-display);
+  font-size: 80px;
+  color: var(--gold);
+  opacity: 0.2;
+  line-height: 1;
+}
+
+.testimonial__text {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-style: italic;
+  color: var(--navy);
+  margin-bottom: 30px;
+  line-height: 1.7;
+}
+
+.testimonial__author {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.testimonial__avatar {
+  width: 50px;
+  height: 50px;
+  background: var(--navy);
+  border-radius: 50%;
+}
+
+.testimonial__name {
+  font-weight: 600;
+  color: var(--navy);
+  font-size: 15px;
+}
+
+.testimonial__role {
+  font-size: 13px;
+  color: var(--steel);
+}
+
+/* Method Section */
+.method {
+  background: linear-gradient(180deg, var(--pearl) 0%, var(--cream) 100%);
+}
+
+.method__intro {
+  text-align: center;
+  max-width: 700px;
+  margin: 0 auto 80px;
+}
+
+.method__intro p {
+  color: var(--steel);
+  margin-bottom: 20px;
+}
+
+.method__intro strong {
+  color: var(--navy);
+}
+
+.method__modules {
+  display: grid;
+  gap: 30px;
+}
+
+.method__module {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: 40px;
+  padding: 50px;
+  background: var(--white);
+  border: 1px solid var(--pearl);
+  transition: all 0.4s ease;
+}
+
+.method__module:hover {
+  border-color: var(--gold);
+  box-shadow: 0 20px 40px rgba(26, 45, 74, 0.05);
+}
+
+.method__module-icon {
+  width: 80px;
+  height: 80px;
+  background: var(--midnight);
+  color: var(--gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.method__module-title {
+  font-size: 24px;
+  color: var(--navy);
+  margin-bottom: 12px;
+}
+
+.method__module-desc {
+  color: var(--steel);
+  font-size: 16px;
+}
+
+/* Objections */
+.objections {
+  background: var(--midnight);
+  color: var(--white);
+}
+
+.objections .section-title {
+  color: var(--white);
+}
+
+.objections__list {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.objection {
+  padding: 50px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.objection:last-child {
+  border-bottom: none;
+}
+
+.objection__question {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-style: italic;
+  color: var(--gold);
+  margin-bottom: 24px;
+}
+
+.objection__answer {
+  color: var(--silver);
+}
+
+.objection__answer p {
+  margin-bottom: 16px;
+}
+
+.objection__answer p:last-child {
+  margin-bottom: 0;
+}
+
+/* Qualification */
+.qualification {
+  background: var(--white);
+}
+
+.qualification__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 60px;
+}
+
+.qualification__col h3 {
+  font-size: 24px;
+  color: var(--navy);
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid var(--gold);
+}
+
+.qualification__col--no h3 {
+  border-color: var(--silver);
+}
+
+.qualification__list {
+  list-style: none;
+}
+
+.qualification__list li {
+  position: relative;
+  padding-left: 36px;
+  margin-bottom: 20px;
+  color: var(--steel);
+}
+
+.qualification__col--yes .qualification__list li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  width: 24px;
+  height: 24px;
+  background: var(--gold);
+  color: var(--midnight);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.qualification__col--no .qualification__list li::before {
+  content: '×';
+  position: absolute;
+  left: 0;
+  width: 24px;
+  height: 24px;
+  background: var(--pearl);
+  color: var(--steel);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+/* Scarcity */
+.scarcity {
+  background: var(--pearl);
+  text-align: center;
+}
+
+.scarcity__content {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.scarcity__content p {
+  color: var(--steel);
+  margin-bottom: 24px;
+  font-size: 18px;
+}
+
+.scarcity__highlight {
+  font-family: var(--font-display);
+  font-size: 28px;
+  color: var(--navy);
+  margin: 40px 0;
+  padding: 40px;
+  background: var(--white);
+  border-left: 4px solid var(--gold);
+}
+
+/* CTA Section */
+.cta {
+  background: linear-gradient(135deg, var(--midnight) 0%, var(--navy) 100%);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.cta::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 150%;
+  height: 150%;
+  background: radial-gradient(ellipse at center, rgba(201, 169, 98, 0.1) 0%, transparent 50%);
+}
+
+.cta__content {
+  position: relative;
+  z-index: 2;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.cta__title {
+  font-size: clamp(36px, 5vw, 56px);
+  color: var(--white);
+  margin-bottom: 30px;
+}
+
+.cta__subtitle {
+  font-size: 20px;
+  color: var(--silver);
+  margin-bottom: 50px;
+}
+
+.cta__button {
+  margin-bottom: 30px;
+}
+
+.cta__note {
+  font-size: 14px;
+  color: var(--silver);
+  font-style: italic;
+}
+
+/* PS Section */
+.ps {
+  background: var(--cream);
+  padding: 80px 0;
+}
+
+.ps__content {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.ps__item {
+  margin-bottom: 30px;
+  padding-left: 30px;
+  border-left: 2px solid var(--gold);
+}
+
+.ps__item strong {
+  color: var(--navy);
+}
+
+.ps__item p {
+  color: var(--steel);
+}
+
+.ps__quote {
+  text-align: center;
+  margin-top: 60px;
+  padding: 40px;
+  background: var(--white);
+}
+
+.ps__quote p {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-style: italic;
+  color: var(--navy);
+  margin-bottom: 16px;
+}
+
+.ps__quote cite {
+  font-size: 14px;
+  color: var(--gold-dark);
+  font-style: normal;
+  font-weight: 600;
+}
+
+/* Footer */
+footer {
+  background: var(--midnight);
+  padding: 40px 0;
+  text-align: center;
+}
+
+footer p {
+  color: var(--steel);
+  font-size: 14px;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .pain__content,
+  .mentor__content,
+  .qualification__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .problem__grid,
+  .triad,
+  .testimonials__grid,
+  .proof__stats {
+    grid-template-columns: 1fr;
+  }
+
+  .method__module {
+    grid-template-columns: 1fr;
+  }
+
+  .mentor__image {
+    max-width: 400px;
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 768px) {
+  section {
+    padding: 80px 0;
+  }
+
+  .container {
+    padding: 0 24px;
+  }
+
+  .hero {
+    padding-top: 100px;
+  }
+
+  .pain__questions,
+  .proof__gallery {
+    padding: 40px;
+  }
+
+  .problem__card,
+  .testimonial,
+  .method__module {
+    padding: 30px;
+  }
+}
+
+/* Scroll animations */
+.fade-in {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.8s ease-out;
+}
+
+.fade-in.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+```
+
+  </style>
+</head>
+<body>
+
+  <!-- Hero Section -->
+
+  <section class="hero">
+    <div class="container">
+      <div class="hero__content">
+        <div class="hero__badge">Exclusivo para Cirurgiões Plásticos</div>
+        <h1 class="hero__title">
+          O Cirurgião Que Domina a <span>Face Moderna</span> Não Compete Por Preço.<br>
+          Ele Define o Mercado.
+        </h1>
+        <p class="hero__subtitle">
+          Descubra o método que transforma cirurgiões plásticos em referências na cirurgia facial — com resultados de plano profundo, anestesia local e recuperação em 7 dias.
+        </p>
+        <div class="hero__cta">
+          <a href="#aplicacao" class="btn btn--primary">Quero Conhecer o Método</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pain Section -->
+
+  <section class="pain">
+    <div class="container">
+      <div class="pain__content">
+        <div class="pain__text fade-in">
+          <p>Você sabe que a face é o futuro. Mas algo está te travando.</p>
+          <p>
+            Se você é um cirurgião plástico experiente, já percebeu o óbvio: 
+            <span class="pain__highlight">a cirurgia facial é o segmento mais lucrativo e sofisticado da especialidade.</span>
+          </p>
+          <p>Os pacientes estão cada vez mais exigentes. O mercado está aquecido. As oportunidades estão aí.</p>
+          <p>E, no entanto, você hesita.</p>
+          <p>
+            Talvez você domine mama e abdômen há anos, mas sente que a face é um território desconhecido — cheio de riscos que você prefere não correr.
+          </p>
+          <p>
+            Ou talvez você já opere faces, mas está frustrado. Frustrado com a complexidade do equipamento endoscópico. Com os resultados inconsistentes. Com o medo de complicações que podem destruir uma reputação construída em décadas.
+          </p>
+        </div>
+        <div class="pain__questions fade-in">
+          <p class="pain__question">"E se eu lesionar o nervo facial?"</p>
+          <p class="pain__question">"E se o paciente tiver uma necrose?"</p>
+          <p class="pain__question">"E se essa face cheia de bioestimuladores reagir de forma imprevisível?"</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Problem Section -->
+
+  <section class="problem">
+    <div class="container">
+      <div class="section-header fade-in">
+        <span class="section-label">O Dilema</span>
+        <h2 class="section-title">A Formação Tradicional Te Colocou<br>em Uma Encruzilhada Impossível</h2>
+      </div>
+
+```
+  <div class="problem__grid">
+    <div class="problem__card fade-in">
+      <span class="problem__card-number">01</span>
+      <h3 class="problem__card-title">Deep Plane Tradicional</h3>
+      <p class="problem__card-subtitle">Técnica Aberta</p>
+      <ul class="problem__card-list">
+        <li>Anestesia geral obrigatória</li>
+        <li>Incisões extensas e visíveis</li>
+        <li>Edema severo por 3 a 6 semanas</li>
+        <li>Risco aumentado de lesão nervosa</li>
+        <li>Contraindicado para faces injetadas</li>
+      </ul>
+    </div>
+    <div class="problem__card fade-in">
+      <span class="problem__card-number">02</span>
+      <h3 class="problem__card-title">Videoendoscopia</h3>
+      <p class="problem__card-subtitle">Complexidade Tecnológica</p>
+      <ul class="problem__card-list">
+        <li>Equipamento caro (R$ 80.000 a R$ 150.000)</li>
+        <li>Curva de aprendizado longa e frustrante</li>
+        <li>Dependência tecnológica constante</li>
+        <li>Visão bidimensional em campo 3D</li>
+        <li>Resultados inconsistentes</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="problem__conclusion fade-in">
+    <p>Você foi treinado para acreditar que essas são as únicas opções.</p>
+    <p>Não são.</p>
+  </div>
+</div>
+```
+
+  </section>
+
+  <!-- Solution Section -->
+
+  <section class="solution">
+    <div class="container">
+      <div class="section-header fade-in">
+        <span class="section-label">A Solução</span>
+        <h2 class="section-title">Existe Um Terceiro Caminho.<br>E Ele Muda Tudo.</h2>
+      </div>
+
+```
+  <div class="solution__intro fade-in">
+    <p>
+      Nos últimos 20 anos, enquanto a maioria dos cirurgiões escolhia um dos dois caminhos tradicionais, eu desenvolvi algo diferente. Não por rebeldia. Por necessidade.
+    </p>
+    <p>
+      Eu precisava de uma técnica que entregasse resultados de plano profundo — a qualidade que os pacientes exigem — mas sem o trauma, sem a complexidade e sem os riscos.
+    </p>
+    <p>
+      Depois de mais de <strong>1.000 cirurgias faciais</strong> e mais de <strong>200 casos específicos</strong> da técnica que desenvolvi, posso afirmar:
+    </p>
+  </div>
+
+  <div class="triad">
+    <div class="triad__item fade-in">
+      <div class="triad__icon">I</div>
+      <h3 class="triad__title">Plano Profundo</h3>
+      <p class="triad__desc">Resultados duradouros e naturais, trabalhando nas camadas corretas</p>
+    </div>
+    <div class="triad__item fade-in">
+      <div class="triad__icon">II</div>
+      <h3 class="triad__title">Anestesia Local</h3>
+      <p class="triad__desc">Eliminando os riscos e custos da anestesia geral</p>
+    </div>
+    <div class="triad__item fade-in">
+      <div class="triad__icon">III</div>
+      <h3 class="triad__title">Recuperação em 7 Dias</h3>
+      <p class="triad__desc">Pacientes voltando à vida social em uma semana</p>
+    </div>
+  </div>
+
+  <div class="solution__skeptic fade-in">
+    <p>"Isso parece bom demais para ser verdade."</p>
+    <span>Eu sei. Eu também pensaria isso. Por isso, deixe-me mostrar a prova.</span>
+  </div>
+</div>
+```
+
+  </section>
+
+  <!-- Proof Section -->
+
+  <section class="proof">
+    <div class="container">
+      <div class="section-header fade-in">
+        <span class="section-label">A Prova Clínica</span>
+        <h2 class="section-title">Porque Ceticismo Se Resolve<br>Com Resultados</h2>
+        <p class="section-subtitle">Você é um profissional. Você sabe que palavras bonitas não operam pacientes. Então vamos aos fatos.</p>
+      </div>
+
+```
+  <div class="proof__stats">
+    <div class="proof__stat fade-in">
+      <div class="proof__stat-number">1.000<span>+</span></div>
+      <div class="proof__stat-label">Cirurgias Faciais</div>
+    </div>
+    <div class="proof__stat fade-in">
+      <div class="proof__stat-number">200<span>+</span></div>
+      <div class="proof__stat-label">Casos Endomidface</div>
+    </div>
+    <div class="proof__stat fade-in">
+      <div class="proof__stat-number"><span>&lt;</span>3<span>%</span></div>
+      <div class="proof__stat-label">Taxa de Complicação</div>
+    </div>
+    <div class="proof__stat fade-in">
+      <div class="proof__stat-number">20</div>
+      <div class="proof__stat-label">Anos de Prática</div>
+    </div>
+  </div>
+
+  <div class="proof__gallery fade-in">
+    <div class="proof__gallery-placeholder">
+      [ Galeria de Antes e Depois — Slider Interativo ]<br>
+      <small>Casos reais. Resultados verificáveis. Recuperação documentada.</small>
+    </div>
+  </div>
+</div>
+```
+
+  </section>
+
+  <!-- Mentor Section -->
+
+  <section class="mentor">
+    <div class="container">
+      <div class="mentor__content">
+        <div class="mentor__image fade-in">
+          <div class="mentor__image-placeholder">
+            [ Foto Profissional Dr. Robério Brandão ]
+          </div>
+        </div>
+        <div class="mentor__text fade-in">
+          <h2>Quem é Dr. Robério Brandão</h2>
+          <div class="mentor__quote">
+            "Por que precisamos traumatizar tanto um paciente para rejuvenescer seu rosto?"
+          </div>
+          <p>
+            Há 20 anos, essa pergunta mudou minha carreira. Ela me levou a questionar dogmas. A estudar obsessivamente. A testar, errar, ajustar e testar novamente — sempre com a segurança do paciente em primeiro lugar.
+          </p>
+          <p>
+            O resultado foi o desenvolvimento de técnicas exclusivas que hoje me permitem operar faces com uma previsibilidade que meus colegas consideram impossível.
+          </p>
+          <p>
+            Hoje, sou convidado para apresentar essas técnicas nos principais congressos de cirurgia plástica do Brasil e do mundo. Mas minha maior satisfação está em ver cirurgiões alcançando resultados que antes pareciam impossíveis.
+          </p>
+
+```
+      <div class="mentor__techniques">
+        <div class="mentor__technique">
+          <div class="mentor__technique-icon">→</div>
+          <div>
+            <div class="mentor__technique-title">Endomidface por Visão Direta</div>
+            <div class="mentor__technique-desc">Toda a precisão do plano profundo, sem a complexidade do equipamento endoscópico</div>
+          </div>
+        </div>
+        <div class="mentor__technique">
+          <div class="mentor__technique-icon">→</div>
+          <div>
+            <div class="mentor__technique-title">Deep Neck sem Remoção de Glândula</div>
+            <div class="mentor__technique-desc">Eliminando o maior risco do procedimento cervical</div>
+          </div>
+        </div>
+        <div class="mentor__technique">
+          <div class="mentor__technique-icon">→</div>
+          <div>
+            <div class="mentor__technique-title">Protocolo para Faces Injetadas</div>
+            <div class="mentor__technique-desc">A abordagem mais segura para pacientes com bioestimuladores</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+```
+
+  </section>
+
+  <!-- Testimonials Section -->
+
+  <section class="testimonials">
+    <div class="container">
+      <div class="section-header fade-in">
+        <span class="section-label">Depoimentos</span>
+        <h2 class="section-title">O Que Dizem os Cirurgiões Que<br>Já Trilharam Este Caminho</h2>
+      </div>
+
+```
+  <div class="testimonials__grid">
+    <div class="testimonial fade-in">
+      <p class="testimonial__text">
+        "No meu terceiro caso, já alcancei um resultado que não conseguia em 10 anos de prática com outras técnicas. O método do Dr. Robério mudou completamente minha abordagem cirúrgica."
+      </p>
+      <div class="testimonial__author">
+        <div class="testimonial__avatar"></div>
+        <div>
+          <div class="testimonial__name">Dr. [Nome]</div>
+          <div class="testimonial__role">Cirurgião Plástico, São Paulo</div>
+        </div>
+      </div>
+    </div>
+    <div class="testimonial fade-in">
+      <p class="testimonial__text">
+        "Eu tinha medo de operar a face. Hoje, é onde me sinto mais seguro. A diferença está na técnica e na confiança que o método te dá."
+      </p>
+      <div class="testimonial__author">
+        <div class="testimonial__avatar"></div>
+        <div>
+          <div class="testimonial__name">Dr. [Nome]</div>
+          <div class="testimonial__role">Cirurgião Plástico, Rio de Janeiro</div>
+        </div>
+      </div>
+    </div>
+    <div class="testimonial fade-in">
+      <p class="testimonial__text">
+        "Finalmente entendi por que meus resultados eram inconsistentes. O problema não era eu — era o método que eu estava usando. Agora tenho previsibilidade."
+      </p>
+      <div class="testimonial__author">
+        <div class="testimonial__avatar"></div>
+        <div>
+          <div class="testimonial__name">Dr. [Nome]</div>
+          <div class="testimonial__role">Cirurgião Plástico, Belo Horizonte</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+```
+
+  </section>
+
+  <!-- Method Section -->
+
+  <section class="method">
+    <div class="container">
+      <div class="section-header fade-in">
+        <span class="section-label">O Método</span>
+        <h2 class="section-title">Apresentando o Método Face Moderna</h2>
+      </div>
+
+```
+  <div class="method__intro fade-in">
+    <p>Este não é um curso online. É um <strong>ecossistema de formação completo</strong> que condensa 20 anos de experiência prática em uma jornada para a maestria na cirurgia facial.</p>
+    <p>Você não vai apenas aprender técnicas. Você vai absorver uma filosofia. Um jeito de pensar a face. Um caminho seguro e validado para se tornar uma referência.</p>
+  </div>
+
+  <div class="method__modules">
+    <div class="method__module fade-in">
+      <div class="method__module-icon">01</div>
+      <div>
+        <h3 class="method__module-title">A Filosofia do "Atalho Inteligente"</h3>
+        <p class="method__module-desc">Por que os caminhos tradicionais são mais longos e arriscados do que precisam ser — e como chegar ao plano profundo de forma mais eficiente</p>
+      </div>
+    </div>
+    <div class="method__module fade-in">
+      <div class="method__module-icon">02</div>
+      <div>
+        <h3 class="method__module-title">Endomidface por Visão Direta</h3>
+        <p class="method__module-desc">A técnica que elimina a dependência do equipamento endoscópico sem sacrificar a precisão. Passo a passo detalhado, anatomia cirúrgica e manejo de variações</p>
+      </div>
+    </div>
+    <div class="method__module fade-in">
+      <div class="method__module-icon">03</div>
+      <div>
+        <h3 class="method__module-title">Deep Neck com Segurança Máxima</h3>
+        <p class="method__module-desc">Abordagem cervical sem remoção de glândula — eliminando o risco de complicações devastadoras. Inclui a técnica exclusiva da "alça glandular"</p>
+      </div>
+    </div>
+    <div class="method__module fade-in">
+      <div class="method__module-icon">04</div>
+      <div>
+        <h3 class="method__module-title">Protocolo para a Face Injetada</h3>
+        <p class="method__module-desc">Como operar com segurança pacientes que já passaram por procedimentos com bioestimuladores e preenchedores — o problema que a maioria não sabe resolver</p>
+      </div>
+    </div>
+    <div class="method__module fade-in">
+      <div class="method__module-icon">05</div>
+      <div>
+        <h3 class="method__module-title">Anestesia Local para Procedimentos Complexos</h3>
+        <p class="method__module-desc">Os protocolos exatos que permitem realizar cirurgias de plano profundo sem anestesia geral, com conforto para o paciente e controle para o cirurgião</p>
+      </div>
+    </div>
+    <div class="method__module fade-in">
+      <div class="method__module-icon">06</div>
+      <div>
+        <h3 class="method__module-title">Recuperação Acelerada: O Protocolo de 7 Dias</h3>
+        <p class="method__module-desc">Por que o edema é menor, a equimose é controlável e seus pacientes podem retornar à vida social em uma semana</p>
+      </div>
+    </div>
+  </div>
+</div>
+```
+
+  </section>
+
+  <!-- Objections Section -->
+
+  <section class="objections">
+    <div class="container">
+      <div class="section-header fade-in">
+        <span class="section-label">Suas Dúvidas</span>
+        <h2 class="section-title">"Mas Dr. Robério..."</h2>
+        <p class="section-subtitle" style="color: var(--silver);">Eu sei o que você está pensando. Deixe-me abordar diretamente.</p>
+      </div>
+
+```
+  <div class="objections__list">
+    <div class="objection fade-in">
+      <h3 class="objection__question">"Sem endoscópio significa menos controle e mais risco."</h3>
+      <div class="objection__answer">
+        <p>Entendo por que você pensa assim. Fomos treinados para acreditar que tecnologia é sinônimo de segurança.</p>
+        <p>Mas pense: o endoscópio te dá uma visão bidimensional de um campo tridimensional. Você perde a percepção de profundidade. Perde o feedback tátil. E fica dependente de um equipamento que pode falhar.</p>
+        <p>A Visão Direta que eu ensino recupera o que o endoscópio roubou: a sua conexão sensorial com os tecidos. O controle é maior, não menor. E minha taxa de complicação de menos de 3% em mais de 200 casos comprova isso.</p>
+      </div>
+    </div>
+    <div class="objection fade-in">
+      <h3 class="objection__question">"O Deep Plane tradicional é o padrão-ouro. Por que mudar?"</h3>
+      <div class="objection__answer">
+        <p>O Deep Plane tradicional foi revolucionário quando surgiu. Mas a face dos pacientes mudou. Bioestimuladores, preenchedores, harmonização facial — o rosto que você opera hoje não é o mesmo de 20 anos atrás.</p>
+        <p>As técnicas precisam evoluir junto. Não estou pedindo que você abandone o plano profundo — estou mostrando uma forma mais inteligente de chegar lá, adaptada para a realidade atual.</p>
+      </div>
+    </div>
+    <div class="objection fade-in">
+      <h3 class="objection__question">"Isso parece bom demais para ser verdade."</h3>
+      <div class="objection__answer">
+        <p>Eu concordo que parece. E é exatamente por isso que baseio tudo em prova clínica, não em promessas.</p>
+        <p>Os casos de antes e depois estão documentados. Os depoimentos de alunos são verificáveis. Os convites para congressos são públicos.</p>
+        <p><strong>Ceticismo é saudável. Mas ceticismo sem investigação é apenas medo disfarçado de prudência.</strong></p>
+      </div>
+    </div>
+  </div>
+</div>
+```
+
+  </section>
+
+  <!-- Qualification Section -->
+
+  <section class="qualification">
+    <div class="container">
+      <div class="section-header fade-in">
+        <span class="section-label">Qualificação</span>
+        <h2 class="section-title">Este Método Não é Para Todos</h2>
+      </div>
+
+```
+  <div class="qualification__grid">
+    <div class="qualification__col qualification__col--yes fade-in">
+      <h3>Este método é para você se:</h3>
+      <ul class="qualification__list">
+        <li>Você é um cirurgião plástico que leva a excelência técnica a sério</li>
+        <li>Você entende que investir em formação é investir no seu posicionamento</li>
+        <li>Você está disposto a seguir um método validado, sem atalhos improvisados</li>
+        <li>Você quer se tornar uma referência, não apenas "mais um" que faz face</li>
+      </ul>
+    </div>
+    <div class="qualification__col qualification__col--no fade-in">
+      <h3>Este método NÃO é para você se:</h3>
+      <ul class="qualification__list">
+        <li>Você busca uma "fórmula mágica" que funcione sem dedicação</li>
+        <li>Você não está disposto a questionar práticas que aprendeu na residência</li>
+        <li>Você prefere competir por preço do que por excelência</li>
+      </ul>
+    </div>
+  </div>
+</div>
+```
+
+  </section>
+
+  <!-- Scarcity Section -->
+
+  <section class="scarcity">
+    <div class="container">
+      <div class="scarcity__content fade-in">
+        <div class="section-header">
+          <span class="section-label">Exclusividade</span>
+          <h2 class="section-title">Por Que o Acesso é Limitado</h2>
+        </div>
+
+```
+    <p>O Método Face Moderna não é um produto de prateleira.</p>
+    <p>Para garantir que cada cirurgião que entra tenha o acompanhamento necessário para alcançar a maestria, eu limito rigorosamente o número de profissionais sob minha mentoria.</p>
+    <p>Isso não é escassez artificial. É a única forma de manter a qualidade que torna este método eficaz.</p>
+
+    <div class="scarcity__highlight">
+      O investimento não é divulgado publicamente.<br>
+      <small style="font-family: var(--font-body); font-size: 16px; color: var(--steel);">Porque o valor deste método não cabe em um número na tela.</small>
+    </div>
+
+    <p>O preço de uma única complicação cirúrgica — em reputação, em processos, em noites sem dormir — é infinitamente maior do que qualquer investimento em formação.</p>
+  </div>
+</div>
+```
+
+  </section>
+
+  <!-- CTA Section -->
+
+  <section class="cta" id="aplicacao">
+    <div class="container">
+      <div class="cta__content fade-in">
+        <h2 class="cta__title">Você Está em Uma Encruzilhada</h2>
+        <p class="cta__subtitle">
+          De um lado, o caminho que você conhece. Do outro, um método validado por 20 anos de prática. Uma chance de se tornar a referência que você sabe que pode ser.
+        </p>
+        <div class="cta__button">
+          <a href="#" class="btn btn--primary">Quero Conversar com a Equipe do Dr. Robério</a>
+        </div>
+        <p class="cta__note">Vagas limitadas. Processo seletivo.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PS Section -->
+
+  <section class="ps">
+    <div class="container">
+      <div class="ps__content fade-in">
+        <div class="ps__item">
+          <p><strong>P.S.</strong> Se você chegou até aqui, é porque algo ressoou. Você reconhece que existe um caminho melhor. A questão agora é simples: você vai dar o próximo passo ou vai fechar esta página e continuar exatamente onde está?</p>
+        </div>
+        <div class="ps__item">
+          <p><strong>P.P.S.</strong> Lembre-se: o custo de NÃO agir também é um custo. Cada mês que passa com técnicas ultrapassadas é um mês de oportunidades perdidas, de pacientes que foram para outros cirurgiões, de posicionamento que você deixou de construir.</p>
+        </div>
+
+```
+    <div class="ps__quote">
+      <p>"A maestria não é um destino. É uma jornada. E toda jornada começa com um primeiro passo."</p>
+      <cite>— Dr. Robério Brandão</cite>
+    </div>
+  </div>
+</div>
+```
+
+  </section>
+
+  <!-- Footer -->
+
+  <footer>
+    <div class="container">
+      <p>© 2024 Dr. Robério Brandão. Todos os direitos reservados.</p>
+    </div>
+  </footer>
+
+  <!-- Scroll Animation Script -->
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const fadeElements = document.querySelectorAll('.fade-in');
+      
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          }
+        });
+      }, {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+      });
+
+      fadeElements.forEach(el => observer.observe(el));
+    });
+  </script>
+
+</body>
+</html>
