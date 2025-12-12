@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Moderna® - Sistema de Aprovação</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @media print {
+            .no-print { display: none !important; }
+            body { background-color: white; }
+            .page-break { page-break-before: always; }
+        }
+        .status-radio:checked + label.approve-label {
+            background-color: #dcfce7; border-color: #166534; color: #166534; font-weight: bold;
+        }
+        .status-radio:checked + label.reject-label {
+            background-color: #fee2e2; border-color: #991b1b; color: #991b1b; font-weight: bold;
+        }
+        /* Loading overlay */
+        #loadingOverlay {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(5px);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans">
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 z-[100] hidden flex-col items-center justify-center">
+        <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-600 mb-4"></div>
+        <p id="loadingText" class="text-xl font-semibold text-slate-700">Conectando...</p>
+    </div>
+
+    <!-- NOTIFICAÇÕES (Toast) -->
+    <div id="toast" class="fixed top-5 right-5 z-[90] hidden transition-all duration-300 transform translate-x-full">
+        <div class="bg-white border-l-4 p-4 rounded shadow-xl flex items-center gap-3 min-w-[300px]" id="toastContent">
+            <!-- Icon e Text injetados via JS -->
+        </div>
+    </div>
+
+    <!-- HEADER -->
+    <div class="bg-slate-900 text-white p-4 shadow-lg sticky top-0 z-50 no-print">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="bg-blue-600 w-10 h-10 rounded-lg flex items-center justify-center font-bold text-xl">F</div>
+                <div>
+                    <h1 class="text-lg font-bold leading-tight">Face Moderna®</h1>
+                    <p class="text-xs text-slate-400">Sistema de Validação de Copy</p>
+                </div>
+            </div>
+            
+            <div class="flex gap-2" id="userActions">
+                <!-- Botões do Usuário Comum -->
+                <button onclick="window.print()" class="px-3 py-2 text-sm bg-slate-700 hover:bg-slate-600 rounded transition flex items-center gap-2">
+                    <i class="fas fa-print"></i> <span class="hidden sm:inline">PDF</span>
+                </button>
+                <button onclick="submitToCloud()" class="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 font-bold rounded transition flex items-center gap-2 shadow-lg shadow-blue-900/50">
+                    <i class="fas fa-cloud-upload-alt"></i> <span>ENVIAR APROVAÇÃO</span>
+                </button>
+            </div>
+
+            <div class="hidden gap-2" id="adminActions">
+                <!-- Botões do Admin -->
+                <span class="text-xs bg-red-900 text-red-100 px-2 py-1 rounded self-center mr-2">MODO ADMIN</span>
+                <button onclick="exitAdmin()" class="px-3 py-2 text-sm bg-slate-700 hover:bg-slate-600 rounded">Sair</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTAINER -->
+    <div class="max-w-6xl mx-auto p-4 sm:p-8 my-6 bg-white shadow-xl min-h-screen rounded-xl" id="mainContainer">
+        
+        <!-- VISÃO 1: FORMULÁRIO (Checklist) -->
+        <div id="viewChecklist">
+            <div class="border-b pb-6 mb-8">
+                <h2 class="text-3xl font-bold text-slate-800">Validação Estratégica</h2>
+                <p class="text-slate-500 mt-2">Revise as sentenças abaixo. Seus dados são salvos automaticamente na nuvem ao clicar em "Enviar".</p>
+                
+                <div class="mt-4 flex gap-4 text-sm text-slate-400">
+                    <div class="flex items-center gap-2" id="connectionStatus">
+                        <i class="fas fa-circle-notch fa-spin text-yellow-500"></i> Conectando...
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-lock text-slate-300"></i> Ambiente Seguro
+                    </div>
+                </div>
+            </div>
+
+            <form id="checklistForm">
+                <!-- Seções serão renderizadas aqui via JS -->
+                <div id="formContent" class="space-y-12"></div>
+            </form>
+
+            <div class="mt-12 p-6 bg-slate-50 rounded-lg border border-slate-200 text-center">
+                <p class="text-slate-600 mb-4">Ao finalizar a revisão, clique abaixo para registrar sua validação no sistema.</p>
+                <button onclick="submitToCloud()" class="px-8 py-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow-lg text-lg transition transform hover:scale-105 flex items-center gap-3 mx-auto">
+                    <i class="fas fa-check-circle"></i> FINALIZAR E ENVIAR
+                </button>
+            </div>
+        </div>
+
+        <!-- VISÃO 2: PAINEL ADMIN (Lista de Respostas) -->
+        <div id="viewAdmin" class="hidden">
+            <div class="flex justify-between items-end border-b pb-4 mb-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-800">Respostas Recebidas</h2>
+                    <p class="text-slate-500 text-sm">Gerencie as aprovações enviadas pelo Dr. Robério.</p>
+                </div>
+                <button onclick="loadSubmissions()" class="text-blue-600 hover:underline text-sm"><i class="fas fa-sync"></i> Atualizar</button>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left text-slate-500">
+                    <thead class="text-xs text-slate-700 uppercase bg-slate-100">
+                        <tr>
+                            <th class="px-6 py-3">Data/Hora</th>
+                            <th class="px-6 py-3">Aprovados</th>
+                            <th class="px-6 py-3">Reprovados</th>
+                            <th class="px-6 py-3">Obs. Críticas</th>
+                            <th class="px-6 py-3 text-right">Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="submissionsTableBody">
+                        <!-- Linhas injetadas via JS -->
+                        <tr><td colspan="5" class="text-center py-8">Carregando dados...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Detalhes da Submissão (Modal simulado) -->
+            <div id="submissionDetail" class="hidden mt-8 p-6 border rounded-lg bg-slate-50">
+                <h3 class="font-bold text-lg mb-4 text-slate-800">Detalhes da Revisão</h3>
+                <div id="detailContent" class="space-y-4"></div>
+                <button onclick="document.getElementById('submissionDetail').classList.add('hidden')" class="mt-6 px-4 py-2 bg-slate-200 hover:bg-slate-300 rounded text-slate-700">Fechar Detalhes</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="max-w-6xl mx-auto py-8 text-center text-xs text-slate-400 no-print">
+        <p>Face Moderna® - Todos os direitos reservados.</p>
+        <button onclick="toggleAdminLogin()" class="mt-2 hover:text-slate-600 transition">Acesso Admin</button>
+    </footer>
+
+    <!-- CONFIGURAÇÃO E LÓGICA DO FIREBASE -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, orderBy, query, Timestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        // --- 1. CONFIGURAÇÃO (Fornecida pelo usuário) ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyCCJe0qJrjSDtUiDm_sSSQMHjMk2kvosYE",
+            authDomain: "gen-lang-client-0576190740.firebaseapp.com",
+            projectId: "gen-lang-client-0576190740",
+            storageBucket: "gen-lang-client-0576190740.firebasestorage.app",
+            messagingSenderId: "204452081240",
+            appId: "1:204452081240:web:152d6767306432916ca42d",
+            measurementId: "G-8R69P0TC9D"
+        };
+
+        // --- 2. INICIALIZAÇÃO ---
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // Estado Global
+        let currentUser = null;
+        let checklistData = {}; // Dados preenchidos
+
+        // --- 3. AUTENTICAÇÃO ANÔNIMA ---
+        // Necessário para conectar ao DB sem obrigar login complexo
+        async function initAuth() {
+            try {
+                const userCredential = await signInAnonymously(auth);
+                currentUser = userCredential.user;
+                console.log("Conectado como:", currentUser.uid);
+                
+                // Atualiza UI
+                const statusDiv = document.getElementById('connectionStatus');
+                statusDiv.innerHTML = '<i class="fas fa-wifi text-green-500"></i> Conectado ao Banco de Dados';
+                statusDiv.className = "flex items-center gap-2 text-green-700 font-medium";
+                
+                showToast('success', 'Sistema conectado e pronto.');
+            } catch (error) {
+                console.error("Erro na auth:", error);
+                
+                // Atualiza UI para erro
+                const statusDiv = document.getElementById('connectionStatus');
+                statusDiv.innerHTML = '<i class="fas fa-exclamation-triangle text-red-500"></i> Erro de Conexão';
+                statusDiv.className = "flex items-center gap-2 text-red-700 font-bold";
+
+                // Tratamento específico para Configuration Not Found
+                if (error.code === 'auth/configuration-not-found') {
+                    alert("AÇÃO NECESSÁRIA NO FIREBASE:\n\nO erro 'configuration-not-found' significa que a Autenticação não foi ativada.\n\n1. Vá no Firebase Console (console.firebase.google.com)\n2. Entre no projeto 'gen-lang-client...'\n3. No menu esquerdo, clique em 'Criação' > 'Authentication'\n4. Clique em 'Vamos começar' (Get Started)\n5. Na aba 'Sign-in method', ative o 'Anônimo' (Anonymous).");
+                    showToast('error', 'Falta ativar Authentication no Console.');
+                } else if (error.code === 'auth/operation-not-allowed') {
+                    alert("AÇÃO NECESSÁRIA:\n\nO login Anônimo não está habilitado.\n\nVá no Firebase Console > Authentication > Sign-in method e ative o provedor 'Anônimo'.");
+                    showToast('error', 'Login Anônimo desativado.');
+                } else {
+                    showToast('error', 'Erro de conexão: ' + error.message);
+                }
+            }
+        }
+        initAuth();
+
+        // --- 4. FUNÇÕES DE DADOS (Checklist) ---
+        const contentStructure = {
+            headlines: [
+                "Bem vindo a Era da Face Moderna.", "Mito Quebrado: Lesão Neural Zero.", "Taxa zero de lesão nervosa permanente em 212 casos.", 
+                "À prova de erros catastróficos. Literalmente.", "0% de lesão nervosa em 212 casos. Sua técnica consegue isso?", 
+                "Endoscópio: 2-5% lesão neural. Visão Direta: 0%. Você escolhe.", "3% complicações vs 12% (literatura endoscópica). Adivinha qual.",
+                "3-4x MAIS SEGURO não é opinião. É DADO.", "Domine em 30 Casos, Não em 10 Anos.", "18 Anos [de experiência do Dr. Robério] em 30 Casos.",
+                "A Solução Definitiva para Bioestimuladores.", "Juventude Restaurada em 7 Dias.", "Recuperação 50% mais rápida (retorno às atividades em 7 dias).",
+                "Isso não é guerra. É MASSACRE.", "A Morte do Endomidface Tradicional.", "Segurança Máxima Garantida. Risco Quase Zero.",
+                "Por que a Maestria Tátil Sistematizada Supera a Câmera Endoscópica.", "A Evolução da Cirurgia Facial: Uma História em Três Eras.",
+                "Do Medo à Maestria: O Fim da Curva de Aprendizado Longa.", "Zero Lesão Nervosa Permanente em 212 Casos. Como é Possível?"
+            ],
+            phrases: [
+                "Não é sorte. É PROTOCOLO.", "Não 'garantimos'. ENTREGAMOS.", "Se houver resistência, você está no plano errado.", "Seu GPS Tátil para a Anatomia.",
+                "Da Intuição à Prova Científica.", "Sistema estruturado = Mais EFICIENTE de aprender.", "Navegue com segurança em casos de fibrose pós-bioestimulador.",
+                "Biofillers são seu pesadelo? Temos a solução documentada.", "Biofiller não é contraindicação. É onde Direct Vision® BRILHA.",
+                "Ideal para o paciente que queixa a queda do terço médio.", "Seu paciente volta ao trabalho em 7 dias ou 21? Faça a conta.",
+                "Menos trauma = Menos edema = Recuperação mais rápida.", "Não é exagero. É FÍSICA.", "O tato te diz na hora se você está no lugar certo ou não.",
+                "Sunk Cost é passado. ROI é futuro.", "Velha Guarda (Nokia, Blackberry) Face Moderna® (iPhone).", "Aprenda UM SISTEMA do criador que resolveu TUDO.",
+                "Respeite a história. Mas não viva nela.", "Face Moderna® não compete com Deep Plane. Ela o substitui.", "Não é mágica. É visão.",
+                "3 bilhões de anos de evolução do olho humano são superiores a uma câmera de $80k.", "ROI emocional: IMPAGÁVEL."
+            ],
+            quotes: [
+                "É como separar páginas de livro molhado.", "Por que câmera de $80k perde para tato humano?", 
+                "'18 anos de experiência em 30 casos' não é mágica. É ENGENHARIA de ensino.", 
+                "Passei 20 anos quebrando paradigmas para que você não precise de 20 anos para dominar a cirurgia facial de elite.", 
+                "Excelência em cirurgia facial não deveria ser um segredo guardado por poucos. Nossa missão é socializá-la.", 
+                "Democratizar a segurança no plano profundo. Essa é a nossa verdadeira revolução.", 
+                "O objetivo não é criar seguidores. É formar mestres.", 
+                "Este método não foi criado para ser um 'dom'. Foi desenhado para ser um protocolo ensinável.", 
+                "Eu sei exatamente o que é sentir o medo paralisante do plano profundo. Este método é o mapa que eu gostaria de ter recebido no início da minha carreira.", 
+                "Meu papel não é te dar 'coragem'. É te dar um método tão seguro que a coragem se torna irrelevante.", 
+                "A evolução não pede permissão. Ela simplesmente acontece. E você escolhe: evoluir junto ou ficar para trás.", 
+                "O vídeo é como se você tivesse que cortar uma cenoura olhando para uma televisão. Não para a sua mão. O nosso método supera esse gap."
+            ],
+            others: [
+                "Navegação Segura no Plano Profundo em Áreas de Alto Risco.", "A orientação é feita pela palpação de cinco marcos ósseos-chave.",
+                "Por Que a Maestria Tátil Sistematizada Supera a Câmera Endoscópica e Liberta o Cirurgião.",
+                "A maestria não é sobre não ter dúvidas. É sobre ter um sistema que te dá as respostas certas quando elas aparecem.",
+                "Você não está comprando um curso. Você está comprando 18 anos de noites mal dormidas, obsessão por detalhes e mais de 1.500 casos resolvidos.",
+                "Não estamos comparando técnicas. Estamos comparando um sistema integrado contra um conjunto de ferramentas fragmentadas.",
+                "Perguntar se a Visão Direta é 'melhor' que o endoscópio é como perguntar se o iPhone é um 'Nokia melhor'. Não é uma melhora. É uma nova categoria.",
+                "A era das soluções isoladas para a face acabou. O futuro pertence aos sistemas que entregam resultados globais.",
+                "Enquanto outros vendem o mapa de uma cidade, nós entregamos o GPS que funciona no mundo inteiro.",
+                "Se a pessoa falar assim: 'eu só opero com anestesia local'. Pronto, exclui todo mundo. Todos vão perder de mim.",
+                "O endomidface endoscópico foi revolucionário... nos anos 90.",
+                "Aceitar complicações 'inerentes à técnica' não é mais aceitável quando existe alternativa sem complicações.",
+                "A diferença entre boa medicina e excelência: Boa medicina usa o que sempre funcionou. Excelência usa o que funciona MELHOR.",
+                "Se você ainda depende de uma torre endoscópica para operar midface em 2025... seus pacientes merecem saber que existe outra forma.",
+                "Não é sobre desrespeitar o passado. É sobre não ficar preso nele.", "30 anos atrás, endomidface era vanguarda. Hoje, é histórico.",
+                "Técnicas dos anos 90 para pacientes dos anos 2020? Não faz sentido.", "O que era impossível sem endoscópio em 1995 é rotineiro por visão direta em 2025.",
+                "Bem vindo a Era da Face Moderna: uma nova escola de pensamento, desenhada para os desafios da face contemporânea.",
+                "Aqui, formamos a próxima geração de cirurgiões na metodologia que transformou a especialidade.",
+                "DADOS: Taxa de Lesão Nervosa: 0% em 212 casos (Face Moderna) vs. 2-5% (Endoscópio).",
+                "DADOS: Complicações Gerais: 3% vs. 12% (literatura endoscópica).",
+                "DADOS: Recuperação: Retorno em 7 dias (Face Moderna) vs. 21 dias (Tradicional).",
+                "DADOS: Tempo Cirúrgico: 1h30 - 3h (Face Moderna) vs. 4-8h (Endoscópico).",
+                "OBJEÇÃO: 'Deep Plane é o padrão-ouro...' -> RESPOSTA: ERA o padrão-ouro em 2005.",
+                "OBJEÇÃO: 'Visão direta não alcança o mesmo plano...' -> RESPOSTA: Mito. Alcançamos com mais segurança (GPS Tátil).",
+                "OBJEÇÃO: 'Curva de aprendizado curta parece irreal.' -> RESPOSTA: Não é mágica, é Engenharia de Ensino.",
+                "OBJEÇÃO: 'Já investi R$ 80k em equipamento.' -> RESPOSTA: Sunk Cost Fallacy. Olhe para o ROI futuro.",
+                "ESTRATÉGIA: Reconhecer o passado com respeito, Educar sobre limitações, Posicionar como evolução inevitável."
+            ]
+        };
+
+        const sectionTitles = {
+            headlines: "1. Headlines & Títulos",
+            phrases: "2. Frases & Slogans",
+            quotes: "3. Citações & Voz",
+            others: "4. Argumentos & Dados"
+        };
+
+        // Renderiza o Form
+        function renderForm() {
+            const container = document.getElementById('formContent');
+            container.innerHTML = '';
+
+            for (const [key, items] of Object.entries(contentStructure)) {
+                const section = document.createElement('div');
+                section.className = "bg-white p-6 rounded-lg border border-slate-200 shadow-sm";
+                section.innerHTML = `<h3 class="text-xl font-bold text-slate-800 border-b pb-2 mb-4">${sectionTitles[key]}</h3>`;
+                
+                items.forEach((text, index) => {
+                    const uniqueId = `${key}_${index}`;
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = "mb-6 pb-6 border-b border-slate-100 last:border-0 last:pb-0";
+                    itemDiv.innerHTML = `
+                        <p class="text-lg text-slate-700 font-medium mb-3">"${text}"</p>
+                        <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                            <div class="flex gap-2 shrink-0">
+                                <input type="radio" id="app_${uniqueId}" name="status_${uniqueId}" value="approved" class="status-radio hidden" onchange="window.updateState('${uniqueId}', 'status', 'approved')">
+                                <label for="app_${uniqueId}" class="approve-label cursor-pointer px-4 py-2 rounded border border-slate-300 text-slate-600 hover:bg-green-50 transition flex items-center gap-2 text-sm">
+                                    <i class="fas fa-check"></i> Aprovar
+                                </label>
+
+                                <input type="radio" id="rej_${uniqueId}" name="status_${uniqueId}" value="rejected" class="status-radio hidden" onchange="window.updateState('${uniqueId}', 'status', 'rejected')">
+                                <label for="rej_${uniqueId}" class="reject-label cursor-pointer px-4 py-2 rounded border border-slate-300 text-slate-600 hover:bg-red-50 transition flex items-center gap-2 text-sm">
+                                    <i class="fas fa-times"></i> Reprovar
+                                </label>
+                            </div>
+                            <input type="text" placeholder="Observações (opcional)..." class="flex-grow text-sm p-2 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500 outline-none w-full"
+                            oninput="window.updateState('${uniqueId}', 'obs', this.value)">
+                        </div>
+                    `;
+                    section.appendChild(itemDiv);
+                });
+                container.appendChild(section);
+            }
+        }
+        
+        renderForm();
+
+        // Salvar estado localmente (na memória JS) antes de enviar
+        window.updateState = (id, field, value) => {
+            if (!checklistData[id]) checklistData[id] = {};
+            checklistData[id][field] = value;
+            checklistData[id].text = getTextById(id); // Helper para pegar o texto original
+        };
+
+        // Helper para achar o texto original baseado no ID (ex: headline_0)
+        function getTextById(id) {
+            const [section, index] = id.split('_');
+            return contentStructure[section][parseInt(index)];
+        }
+
+        // --- 5. FUNÇÃO ENVIAR PARA NUVEM ---
+        window.submitToCloud = async () => {
+            if (!currentUser) {
+                showToast('error', 'Sem conexão com o banco de dados. Verifique a configuração.');
+                
+                // Tenta reconectar se falhou
+                initAuth();
+                return;
+            }
+
+            // Conta quantos itens foram revisados
+            const totalItems = Object.keys(checklistData).length;
+            if (totalItems === 0) {
+                showToast('error', 'Por favor, avalie pelo menos um item antes de enviar.');
+                return;
+            }
+
+            const confirmEnvio = confirm(`Você revisou ${totalItems} itens. Deseja enviar agora para a nuvem?`);
+            if (!confirmEnvio) return;
+
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+
+            try {
+                // Prepara o objeto para salvar
+                const submission = {
+                    submittedAt: Timestamp.now(),
+                    userId: currentUser.uid,
+                    answers: checklistData,
+                    stats: {
+                        approved: Object.values(checklistData).filter(i => i.status === 'approved').length,
+                        rejected: Object.values(checklistData).filter(i => i.status === 'rejected').length,
+                        total: totalItems
+                    }
+                };
+
+                // Salva no Firestore
+                await addDoc(collection(db, "checklist_submissions"), submission);
+
+                document.getElementById('loadingOverlay').classList.add('hidden');
+                showToast('success', 'Enviado com sucesso! A equipe já recebeu.');
+                
+                // Opcional: Limpar formulário ou travar
+                alert("Dados enviados com sucesso! Obrigado, Dr. Robério.");
+
+            } catch (e) {
+                console.error("Erro ao enviar: ", e);
+                document.getElementById('loadingOverlay').classList.add('hidden');
+                
+                if (e.code === 'permission-denied') {
+                    alert("ERRO DE PERMISSÃO: O banco de dados foi criado no modo 'Bloqueado' (Locked) ou suas regras impedem gravação.\n\nSolução: Vá no Firestore > Regras e permita leitura/gravação.");
+                } else {
+                    showToast('error', 'Erro ao salvar: ' + e.message);
+                }
+            }
+        };
+
+        // --- 6. FUNÇÕES ADMIN ---
+        window.toggleAdminLogin = () => {
+            const pass = prompt("Senha do Administrador:");
+            if (pass === "admin123") {
+                document.getElementById('viewChecklist').classList.add('hidden');
+                document.getElementById('viewAdmin').classList.remove('hidden');
+                document.getElementById('userActions').classList.add('hidden');
+                document.getElementById('adminActions').classList.remove('hidden');
+                document.getElementById('adminActions').classList.add('flex');
+                
+                loadSubmissions();
+            } else if (pass) {
+                alert("Senha incorreta.");
+            }
+        };
+
+        window.exitAdmin = () => {
+            location.reload(); // Recarrega para limpar estado visual
+        };
+
+        window.loadSubmissions = async () => {
+            const tbody = document.getElementById('submissionsTableBody');
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4">Carregando...</td></tr>';
+
+            try {
+                const q = query(collection(db, "checklist_submissions"), orderBy("submittedAt", "desc"));
+                const querySnapshot = await getDocs(q);
+
+                tbody.innerHTML = '';
+                if (querySnapshot.empty) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4">Nenhuma resposta encontrada ainda.</td></tr>';
+                    return;
+                }
+
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const date = data.submittedAt.toDate().toLocaleString('pt-BR');
+                    
+                    // Conta obs preenchidas
+                    const obsCount = Object.values(data.answers).filter(a => a.obs && a.obs.trim() !== '').length;
+
+                    const row = document.createElement('tr');
+                    row.className = "bg-white border-b hover:bg-slate-50";
+                    row.innerHTML = `
+                        <td class="px-6 py-4 font-medium text-slate-900">${date}</td>
+                        <td class="px-6 py-4 text-green-600 font-bold">${data.stats.approved}</td>
+                        <td class="px-6 py-4 text-red-600 font-bold">${data.stats.rejected}</td>
+                        <td class="px-6 py-4">${obsCount > 0 ? `<span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs">${obsCount} observações</span>` : '-'}</td>
+                        <td class="px-6 py-4 text-right">
+                            <button class="font-medium text-blue-600 hover:underline" onclick='window.viewDetail(${JSON.stringify(data.answers)})'>Ver Detalhes</button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } catch (e) {
+                console.error("Erro admin:", e);
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-red-500 py-4">Erro ao carregar dados. Verifique permissões.</td></tr>';
+            }
+        };
+
+        window.viewDetail = (answers) => {
+            const detailContainer = document.getElementById('detailContent');
+            detailContainer.innerHTML = '';
+            
+            // Filtra só o que foi respondido
+            for (const [key, val] of Object.entries(answers)) {
+                const div = document.createElement('div');
+                div.className = `p-3 rounded border ${val.status === 'approved' ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`;
+                div.innerHTML = `
+                    <p class="font-bold text-sm mb-1 ${val.status === 'approved' ? 'text-green-800' : 'text-red-800'}">
+                        ${val.status === 'approved' ? 'APROVADO' : 'REPROVADO'}
+                    </p>
+                    <p class="text-slate-700 italic">"${val.text}"</p>
+                    ${val.obs ? `<p class="mt-2 text-sm bg-white p-2 rounded border border-slate-200"><strong>Obs:</strong> ${val.obs}</p>` : ''}
+                `;
+                detailContainer.appendChild(div);
+            }
+            
+            document.getElementById('submissionDetail').classList.remove('hidden');
+        };
+
+        // --- UTILS ---
+        function showToast(type, msg) {
+            const toast = document.getElementById('toast');
+            const content = document.getElementById('toastContent');
+            
+            content.className = `bg-white border-l-4 p-4 rounded shadow-xl flex items-center gap-3 min-w-[300px] ${type === 'success' ? 'border-green-500' : 'border-red-500'}`;
+            
+            content.innerHTML = `
+                <div class="${type === 'success' ? 'text-green-500' : 'text-red-500'}">
+                    <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'} fa-lg"></i>
+                </div>
+                <div>
+                    <p class="font-bold text-sm text-slate-800">${type === 'success' ? 'Sucesso' : 'Atenção'}</p>
+                    <p class="text-sm text-slate-500">${msg}</p>
+                </div>
+            `;
+
+            toast.classList.remove('hidden', 'translate-x-full');
+            setTimeout(() => {
+                toast.classList.add('translate-x-full');
+                setTimeout(() => toast.classList.add('hidden'), 300);
+            }, 4000);
+        }
+
+    </script>
+</body>
+</html>
