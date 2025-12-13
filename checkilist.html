@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Dr Robério Brandão - Validação</title>
+    <title>Face Moderna® - Validação</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -19,7 +19,7 @@
     <!-- Loading Screen -->
     <div id="loadingOverlay" class="fixed inset-0 z-[100] hidden flex-col items-center justify-center p-4 text-center">
         <div class="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-600 mb-4"></div>
-        <p id="loadingText" class="text-lg font-semibold text-slate-700">Enviando respostas...</p>
+        <p id="loadingText" class="text-lg font-semibold text-slate-700">Processando...</p>
     </div>
 
     <!-- Header -->
@@ -97,7 +97,9 @@
         import { getFirestore, collection, addDoc, getDocs, orderBy, query, Timestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // Configuração do Cliente
+        // ==========================================
+        // CONFIGURAÇÃO ATUALIZADA
+        // ==========================================
         const firebaseConfig = {
             apiKey: "AIzaSyCCJe0qJrjSDtUiDm_sSSQMHjMk2kvosYE",
             authDomain: "gen-lang-client-0576190740.firebaseapp.com",
@@ -107,6 +109,7 @@
             appId: "1:204452081240:web:152d6767306432916ca42d",
             measurementId: "G-8R69P0TC9D"
         };
+        // ==========================================
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
@@ -178,7 +181,7 @@
             checklistData[id].text = contentStructure[sec][parseInt(idx)];
         };
 
-        // 4. Enviar para Nuvem
+        // 4. Enviar para Nuvem (COM TIMEOUT DE SEGURANÇA)
         window.submitToCloud = async () => {
             const total = Object.keys(checklistData).length;
             if (total === 0) return alert('Por favor, responda pelo menos um item antes de enviar.');
@@ -191,7 +194,13 @@
                 // Usa UID real ou gera um na hora
                 const uid = currentUser ? currentUser.uid : 'anonimo_' + Date.now();
                 
-                await addDoc(collection(db, "checklist_submissions"), {
+                // Cria promessa de timeout (10 segundos)
+                const timeout = new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error("O envio demorou demais. A sua internet pode estar instável ou o Firebase bloqueou a conexão.")), 10000)
+                );
+
+                // Cria promessa de envio
+                const envio = addDoc(collection(db, "checklist_submissions"), {
                     submittedAt: Timestamp.now(),
                     userId: uid,
                     answers: checklistData,
@@ -201,6 +210,9 @@
                         total: total
                     }
                 });
+
+                // Compete as duas: quem terminar primeiro ganha
+                await Promise.race([envio, timeout]);
                 
                 document.getElementById('loadingOverlay').classList.add('hidden');
                 alert("SUCESSO! ✅\n\nRespostas enviadas e salvas com segurança.");
@@ -208,7 +220,7 @@
             } catch (e) {
                 console.error(e);
                 document.getElementById('loadingOverlay').classList.add('hidden');
-                alert(`ERRO AO SALVAR ❌\n\nO sistema não conseguiu salvar. Verifique sua internet.\nErro: ${e.message}`);
+                alert(`ERRO AO SALVAR ❌\n\n${e.message}`);
             }
         };
 
