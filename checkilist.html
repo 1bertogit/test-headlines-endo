@@ -7,81 +7,153 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        @media print { .no-print { display: none !important; } body { background-color: white; } .page-break { page-break-before: always; } }
-        .status-radio:checked + label.approve-label { background-color: #dcfce7; border-color: #166534; color: #166534; font-weight: bold; }
-        .status-radio:checked + label.reject-label { background-color: #fee2e2; border-color: #991b1b; color: #991b1b; font-weight: bold; }
-        #loadingOverlay { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(5px); }
-        input[type="text"], textarea { font-size: 16px !important; }
+        @media print {
+            .no-print { display: none !important; }
+            body { background-color: white; }
+            .page-break { page-break-before: always; }
+        }
+        /* Estilos personalizados para os botões de seleção */
+        .status-radio:checked + label.approve-label {
+            background-color: #dcfce7; /* green-100 */
+            border-color: #166534; /* green-800 */
+            color: #166534;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status-radio:checked + label.reject-label {
+            background-color: #fee2e2; /* red-100 */
+            border-color: #991b1b; /* red-800 */
+            color: #991b1b;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        /* Loading overlay */
+        #loadingOverlay {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(5px);
+        }
+        /* Previne zoom no iOS ao focar inputs */
+        input[type="text"], textarea {
+            font-size: 16px !important;
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans pb-20 sm:pb-0">
 
-    <!-- Loading -->
+    <!-- Loading Overlay -->
     <div id="loadingOverlay" class="fixed inset-0 z-[100] hidden flex-col items-center justify-center p-4 text-center">
         <div class="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-600 mb-4"></div>
-        <p id="loadingText" class="text-lg font-semibold text-slate-700">Processando...</p>
+        <p id="loadingText" class="text-lg font-semibold text-slate-700">Conectando ao sistema...</p>
     </div>
 
-    <!-- Header -->
+    <!-- NOTIFICAÇÕES (Toast) - Ajustado para Mobile (Topo Centralizado) -->
+    <div id="toast" class="fixed top-4 left-4 right-4 sm:left-auto sm:right-5 sm:w-auto z-[90] hidden transition-all duration-300 transform -translate-y-full sm:translate-y-0 sm:translate-x-full">
+        <div class="bg-white border-l-4 p-4 rounded shadow-2xl flex items-center gap-3 w-full sm:min-w-[300px]" id="toastContent">
+            <!-- Icon e Text injetados via JS -->
+        </div>
+    </div>
+
+    <!-- HEADER -->
     <div class="bg-slate-900 text-white shadow-lg sticky top-0 z-50 no-print">
         <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
-            <div class="flex items-center gap-2">
-                <div class="bg-blue-600 w-8 h-8 rounded flex items-center justify-center font-bold">F</div>
-                <div><h1 class="text-base font-bold">Face Moderna®</h1></div>
+            <div class="flex items-center gap-2 sm:gap-3">
+                <div class="bg-blue-600 w-8 h-8 sm:w-10 sm:h-10 rounded flex items-center justify-center font-bold text-lg sm:text-xl shrink-0">F</div>
+                <div class="leading-tight">
+                    <h1 class="text-base sm:text-lg font-bold">Face Moderna®</h1>
+                    <p class="text-[10px] sm:text-xs text-slate-400 hidden sm:block">Sistema de Validação de Copy</p>
+                </div>
             </div>
+            
             <div class="flex gap-2" id="userActions">
-                <button onclick="window.print()" class="w-8 h-8 bg-slate-700 rounded flex items-center justify-center"><i class="fas fa-print"></i></button>
-                <button onclick="submitToCloud()" class="px-3 py-2 text-sm bg-blue-600 font-bold rounded shadow-lg active:scale-95 flex items-center gap-2">
-                    <i class="fas fa-paper-plane"></i> <span>ENVIAR</span>
+                <!-- Botões Adaptativos -->
+                <button onclick="window.print()" class="w-8 h-8 sm:w-auto sm:h-auto sm:px-3 sm:py-2 bg-slate-700 hover:bg-slate-600 rounded transition flex items-center justify-center gap-2">
+                    <i class="fas fa-print"></i> <span class="hidden sm:inline text-sm">PDF</span>
+                </button>
+                <button onclick="submitToCloud()" class="px-3 py-2 sm:px-4 text-sm bg-blue-600 hover:bg-blue-500 font-bold rounded transition flex items-center gap-2 shadow-lg shadow-blue-900/50 active:scale-95">
+                    <i class="fas fa-paper-plane"></i> 
+                    <span class="sm:hidden">ENVIAR</span>
+                    <span class="hidden sm:inline">ENVIAR APROVAÇÃO</span>
                 </button>
             </div>
+
             <div class="hidden gap-2" id="adminActions">
-                <span class="text-xs bg-red-900 text-red-100 px-2 py-1 rounded self-center font-bold">ADMIN</span>
-                <button onclick="exitAdmin()" class="px-3 py-1 text-sm bg-slate-700 rounded">Sair</button>
+                <span class="text-[10px] sm:text-xs bg-red-900 text-red-100 px-2 py-1 rounded self-center mr-2 font-bold">ADMIN</span>
+                <button onclick="exitAdmin()" class="px-3 py-1 text-sm bg-slate-700 hover:bg-slate-600 rounded">Sair</button>
             </div>
         </div>
     </div>
 
-    <!-- Conteúdo -->
-    <div class="max-w-6xl mx-auto p-3 sm:p-8 my-2 sm:my-6 bg-white min-h-screen sm:rounded-xl" id="mainContainer">
+    <!-- MAIN CONTAINER -->
+    <div class="max-w-6xl mx-auto p-3 sm:p-8 my-2 sm:my-6 bg-white shadow-none sm:shadow-xl min-h-screen sm:rounded-xl" id="mainContainer">
+        
+        <!-- VISÃO 1: FORMULÁRIO (Checklist) -->
         <div id="viewChecklist">
             <div class="border-b pb-4 mb-6">
-                <h2 class="text-2xl font-bold text-slate-800">Validação</h2>
-                <div class="mt-2 flex items-center gap-2 text-sm" id="connectionStatus">
-                    <i class="fas fa-circle-notch fa-spin text-blue-500"></i> <span class="text-slate-500">Iniciando sistema...</span>
+                <h2 class="text-2xl sm:text-3xl font-bold text-slate-800">Validação</h2>
+                <p class="text-sm sm:text-base text-slate-500 mt-1">Revise as sentenças abaixo.</p>
+                
+                <div class="mt-3 flex flex-wrap gap-3 text-xs sm:text-sm text-slate-400">
+                    <div class="flex items-center gap-1.5" id="connectionStatus">
+                        <i class="fas fa-circle-notch fa-spin text-yellow-500"></i> Conectando...
+                    </div>
                 </div>
             </div>
 
-            <form id="checklistForm"><div id="formContent" class="space-y-8"></div></form>
+            <form id="checklistForm">
+                <!-- Seções renderizadas via JS -->
+                <div id="formContent" class="space-y-8 sm:space-y-12"></div>
+            </form>
 
-            <div class="mt-8 p-6 bg-slate-50 rounded-lg text-center pb-24">
-                <button onclick="submitToCloud()" class="w-full sm:w-auto px-8 py-4 bg-green-600 text-white font-bold rounded-lg shadow-lg text-lg active:scale-95 flex items-center justify-center gap-3 mx-auto">
+            <div class="mt-8 sm:mt-12 p-6 bg-slate-50 rounded-lg border border-slate-200 text-center pb-24 sm:pb-6">
+                <p class="text-slate-600 mb-4 text-sm sm:text-base">Ao finalizar a revisão, clique abaixo para registrar.</p>
+                <button onclick="submitToCloud()" class="w-full sm:w-auto px-8 py-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow-lg text-lg transition transform hover:scale-105 active:scale-95 flex items-center justify-center gap-3 mx-auto">
                     <i class="fas fa-check-circle"></i> FINALIZAR E ENVIAR
                 </button>
             </div>
         </div>
 
-        <!-- Admin -->
+        <!-- VISÃO 2: PAINEL ADMIN -->
         <div id="viewAdmin" class="hidden">
-            <div class="flex justify-between border-b pb-4 mb-4">
-                <h2 class="text-xl font-bold">Respostas</h2>
-                <button onclick="loadSubmissions()" class="text-blue-600 text-sm"><i class="fas fa-sync"></i> Atualizar</button>
+            <div class="flex justify-between items-end border-b pb-4 mb-6">
+                <div>
+                    <h2 class="text-xl sm:text-2xl font-bold text-slate-800">Respostas</h2>
+                </div>
+                <button onclick="loadSubmissions()" class="text-blue-600 text-sm px-3 py-2 bg-blue-50 rounded"><i class="fas fa-sync"></i> Atualizar</button>
             </div>
-            <div class="overflow-x-auto"><table class="w-full text-sm text-left"><tbody id="submissionsTableBody"></tbody></table></div>
-            <div id="submissionDetail" class="hidden mt-6 p-4 border rounded bg-slate-50">
-                <h3 class="font-bold mb-2">Detalhes</h3>
-                <div id="detailContent" class="space-y-2"></div>
-                <button onclick="document.getElementById('submissionDetail').classList.add('hidden')" class="mt-4 w-full py-2 bg-slate-200 rounded font-bold">Fechar</button>
+
+            <div class="overflow-x-auto -mx-3 sm:mx-0">
+                <table class="w-full text-sm text-left text-slate-500 min-w-[600px]">
+                    <thead class="text-xs text-slate-700 uppercase bg-slate-100">
+                        <tr>
+                            <th class="px-4 py-3">Data</th>
+                            <th class="px-4 py-3">Aprovados</th>
+                            <th class="px-4 py-3">Reprovados</th>
+                            <th class="px-4 py-3">Obs</th>
+                            <th class="px-4 py-3 text-right">Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="submissionsTableBody">
+                        <tr><td colspan="5" class="text-center py-8">Carregando...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="submissionDetail" class="hidden mt-6 p-4 border rounded-lg bg-slate-50 scroll-mt-20">
+                <h3 class="font-bold text-lg mb-4 text-slate-800">Detalhes</h3>
+                <div id="detailContent" class="space-y-4"></div>
+                <button onclick="document.getElementById('submissionDetail').classList.add('hidden')" class="mt-6 w-full py-3 bg-slate-200 rounded text-slate-700 font-bold">Fechar</button>
             </div>
         </div>
+
     </div>
 
-    <!-- Footer -->
+    <!-- FOOTER -->
     <footer class="max-w-6xl mx-auto py-6 text-center text-xs text-slate-400 no-print">
         <p>Face Moderna® &copy; 2025</p>
-        <button onclick="toggleAdminLogin()" class="mt-4 px-4 py-2 border rounded-full">Área Admin</button>
+        <button onclick="toggleAdminLogin()" class="mt-4 px-4 py-2 border border-slate-200 rounded-full hover:bg-slate-100 transition">Área Administrativa</button>
     </footer>
 
+    <!-- FIREBASE LOGIC -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, orderBy, query, Timestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -104,139 +176,259 @@
         let currentUser = null;
         let checklistData = {};
 
-        // Tentativa de Autenticação (mas não bloqueante)
         async function initAuth() {
             try {
                 const userCredential = await signInAnonymously(auth);
                 currentUser = userCredential.user;
-                updateStatus(true, "Sistema Online (Autenticado)");
+                const statusDiv = document.getElementById('connectionStatus');
+                statusDiv.innerHTML = '<i class="fas fa-wifi text-green-500"></i> Online';
+                statusDiv.className = "flex items-center gap-1.5 text-green-700 font-bold";
             } catch (error) {
-                console.warn("Auth falhou, mas seguindo sem login:", error);
-                // Gera ID falso se falhar, para não travar
-                currentUser = { uid: "anonimo_" + Math.random().toString(36).substr(2, 9) };
-                updateStatus(true, "Sistema Online (Modo Público)");
+                console.error("Auth Error:", error);
+                const statusDiv = document.getElementById('connectionStatus');
+                statusDiv.innerHTML = '<i class="fas fa-exclamation-triangle text-red-500"></i> Offline';
+                statusDiv.className = "flex items-center gap-1.5 text-red-700 font-bold";
+                if (error.code === 'auth/configuration-not-found') {
+                    alert("ERRO: Configure a Autenticação Anônima no Firebase Console.");
+                }
+            }
+        }
+        initAuth();
+
+        const contentStructure = {
+            headlines: [
+                "Bem vindo a Era da Face Moderna.", "Mito Quebrado: Lesão Neural Zero.", "Taxa zero de lesão nervosa permanente em 212 casos.", 
+                "À prova de erros catastróficos. Literalmente.", "0% de lesão nervosa em 212 casos. Sua técnica consegue isso?", 
+                "Endoscópio: 2-5% lesão neural. Visão Direta: 0%. Você escolhe.", "3% complicações vs 12% (literatura endoscópica). Adivinha qual.",
+                "3-4x MAIS SEGURO não é opinião. É DADO.", "Domine em 30 Casos, Não em 10 Anos.", "18 Anos [de experiência do Dr. Robério] em 30 Casos.",
+                "A Solução Definitiva para Bioestimuladores.", "Juventude Restaurada em 7 Dias.", "Recuperação 50% mais rápida (retorno às atividades em 7 dias).",
+                "Isso não é guerra. É MASSACRE.", "A Morte do Endomidface Tradicional.", "Segurança Máxima Garantida. Risco Quase Zero.",
+                "Por que a Maestria Tátil Sistematizada Supera a Câmera Endoscópica.", "A Evolução da Cirurgia Facial: Uma História em Três Eras.",
+                "Do Medo à Maestria: O Fim da Curva de Aprendizado Longa.", "Zero Lesão Nervosa Permanente em 212 Casos. Como é Possível?"
+            ],
+            phrases: [
+                "Não é sorte. É PROTOCOLO.", "Não 'garantimos'. ENTREGAMOS.", "Se houver resistência, você está no plano errado.", "Seu GPS Tátil para a Anatomia.",
+                "Da Intuição à Prova Científica.", "Sistema estruturado = Mais EFICIENTE de aprender.", "Navegue com segurança em casos de fibrose pós-bioestimulador.",
+                "Biofillers são seu pesadelo? Temos a solução documentada.", "Biofiller não é contraindicação. É onde Direct Vision® BRILHA.",
+                "Ideal para o paciente que queixa a queda do terço médio.", "Seu paciente volta ao trabalho em 7 dias ou 21? Faça a conta.",
+                "Menos trauma = Menos edema = Recuperação mais rápida.", "Não é exagero. É FÍSICA.", "O tato te diz na hora se você está no lugar certo ou não.",
+                "Sunk Cost é passado. ROI é futuro.", "Velha Guarda (Nokia, Blackberry) Face Moderna® (iPhone).", "Aprenda UM SISTEMA do criador que resolveu TUDO.",
+                "Respeite a história. Mas não viva nela.", "Face Moderna® não compete com Deep Plane. Ela o substitui.", "Não é mágica. É visão.",
+                "3 bilhões de anos de evolução do olho humano são superiores a uma câmera de $80k.", "ROI emocional: IMPAGÁVEL."
+            ],
+            quotes: [
+                "É como separar páginas de livro molhado.", "Por que câmera de $80k perde para tato humano?", 
+                "'18 anos de experiência em 30 casos' não é mágica. É ENGENHARIA de ensino.", 
+                "Passei 20 anos quebrando paradigmas para que você não precise de 20 anos para dominar a cirurgia facial de elite.", 
+                "Excelência em cirurgia facial não deveria ser um segredo guardado por poucos. Nossa missão é socializá-la.", 
+                "Democratizar a segurança no plano profundo. Essa é a nossa verdadeira revolução.", 
+                "O objetivo não é criar seguidores. É formar mestres.", 
+                "Este método não foi criado para ser um 'dom'. Foi desenhado para ser um protocolo ensinável.", 
+                "Eu sei exatamente o que é sentir o medo paralisante do plano profundo. Este método é o mapa que eu gostaria de ter recebido no início da minha carreira.", 
+                "Meu papel não é te dar 'coragem'. É te dar um método tão seguro que a coragem se torna irrelevante.", 
+                "A evolução não pede permissão. Ela simplesmente acontece. E você escolhe: evoluir junto ou ficar para trás.", 
+                "O vídeo é como se você tivesse que cortar uma cenoura olhando para uma televisão. Não para a sua mão. O nosso método supera esse gap."
+            ],
+            others: [
+                "Navegação Segura no Plano Profundo em Áreas de Alto Risco.", "A orientação é feita pela palpação de cinco marcos ósseos-chave.",
+                "Por Que a Maestria Tátil Sistematizada Supera a Câmera Endoscópica e Liberta o Cirurgião.",
+                "A maestria não é sobre não ter dúvidas. É sobre ter um sistema que te dá as respostas certas quando elas aparecem.",
+                "Você não está comprando um curso. Você está comprando 18 anos de noites mal dormidas, obsessão por detalhes e mais de 1.500 casos resolvidos.",
+                "Não estamos comparando técnicas. Estamos comparando um sistema integrado contra um conjunto de ferramentas fragmentadas.",
+                "Perguntar se a Visão Direta é 'melhor' que o endoscópio é como perguntar se o iPhone é um 'Nokia melhor'. Não é uma melhora. É uma nova categoria.",
+                "A era das soluções isoladas para a face acabou. O futuro pertence aos sistemas que entregam resultados globais.",
+                "Enquanto outros vendem o mapa de uma cidade, nós entregamos o GPS que funciona no mundo inteiro.",
+                "Se a pessoa falar assim: 'eu só opero com anestesia local'. Pronto, exclui todo mundo. Todos vão perder de mim.",
+                "O endomidface endoscópico foi revolucionário... nos anos 90.",
+                "Aceitar complicações 'inerentes à técnica' não é mais aceitável quando existe alternativa sem complicações.",
+                "A diferença entre boa medicina e excelência: Boa medicina usa o que sempre funcionou. Excelência usa o que funciona MELHOR.",
+                "Se você ainda depende de uma torre endoscópica para operar midface em 2025... seus pacientes merecem saber que existe outra forma.",
+                "Não é sobre desrespeitar o passado. É sobre não ficar preso nele.", "30 anos atrás, endomidface era vanguarda. Hoje, é histórico.",
+                "Técnicas dos anos 90 para pacientes dos anos 2020? Não faz sentido.", "O que era impossível sem endoscópio em 1995 é rotineiro por visão direta em 2025.",
+                "Bem vindo a Era da Face Moderna: uma nova escola de pensamento, desenhada para os desafios da face contemporânea.",
+                "Aqui, formamos a próxima geração de cirurgiões na metodologia que transformou a especialidade.",
+                "DADOS: Taxa de Lesão Nervosa: 0% em 212 casos (Face Moderna) vs. 2-5% (Endoscópio).",
+                "DADOS: Complicações Gerais: 3% vs. 12% (literatura endoscópica).",
+                "DADOS: Recuperação: Retorno em 7 dias (Face Moderna) vs. 21 dias (Tradicional).",
+                "DADOS: Tempo Cirúrgico: 1h30 - 3h (Face Moderna) vs. 4-8h (Endoscópico).",
+                "OBJEÇÃO: 'Deep Plane é o padrão-ouro...' -> RESPOSTA: ERA o padrão-ouro em 2005.",
+                "OBJEÇÃO: 'Visão direta não alcança o mesmo plano...' -> RESPOSTA: Mito. Alcançamos com mais segurança (GPS Tátil).",
+                "OBJEÇÃO: 'Curva de aprendizado curta parece irreal.' -> RESPOSTA: Não é mágica, é Engenharia de Ensino.",
+                "OBJEÇÃO: 'Já investi R$ 80k em equipamento.' -> RESPOSTA: Sunk Cost Fallacy. Olhe para o ROI futuro.",
+                "ESTRATÉGIA: Reconhecer o passado com respeito, Educar sobre limitações, Posicionar como evolução inevitável."
+            ]
+        };
+
+        const sectionTitles = {
+            headlines: "1. Headlines",
+            phrases: "2. Frases",
+            quotes: "3. Citações",
+            others: "4. Argumentos"
+        };
+
+        function renderForm() {
+            const container = document.getElementById('formContent');
+            container.innerHTML = '';
+
+            for (const [key, items] of Object.entries(contentStructure)) {
+                const section = document.createElement('div');
+                section.className = "bg-white p-4 sm:p-6 rounded-lg border border-slate-200 shadow-sm";
+                section.innerHTML = `<h3 class="text-lg sm:text-xl font-bold text-slate-800 border-b pb-2 mb-4 sticky top-[60px] bg-white z-10 py-2">${sectionTitles[key]}</h3>`;
+                
+                items.forEach((text, index) => {
+                    const uniqueId = `${key}_${index}`;
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = "mb-8 pb-8 border-b border-slate-100 last:border-0 last:pb-0";
+                    itemDiv.innerHTML = `
+                        <p class="text-base sm:text-lg text-slate-700 font-medium mb-4 leading-relaxed">"${text}"</p>
+                        
+                        <div class="flex flex-col lg:flex-row gap-3">
+                            <!-- Botões de Ação - Full Width no Mobile -->
+                            <div class="flex gap-2 w-full lg:w-auto shrink-0">
+                                <input type="radio" id="app_${uniqueId}" name="status_${uniqueId}" value="approved" class="status-radio hidden" onchange="window.updateState('${uniqueId}', 'status', 'approved')">
+                                <label for="app_${uniqueId}" class="approve-label flex-1 lg:flex-none cursor-pointer px-4 py-3 rounded border border-slate-300 text-slate-600 hover:bg-green-50 transition flex items-center justify-center gap-2 text-sm select-none touch-manipulation">
+                                    <i class="fas fa-check"></i> Aprovar
+                                </label>
+
+                                <input type="radio" id="rej_${uniqueId}" name="status_${uniqueId}" value="rejected" class="status-radio hidden" onchange="window.updateState('${uniqueId}', 'status', 'rejected')">
+                                <label for="rej_${uniqueId}" class="reject-label flex-1 lg:flex-none cursor-pointer px-4 py-3 rounded border border-slate-300 text-slate-600 hover:bg-red-50 transition flex items-center justify-center gap-2 text-sm select-none touch-manipulation">
+                                    <i class="fas fa-times"></i> Reprovar
+                                </label>
+                            </div>
+                            
+                            <!-- Input Texto - Full Width -->
+                            <input type="text" placeholder="Observação (opcional)..." class="flex-grow text-base p-3 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500 outline-none w-full bg-slate-50 focus:bg-white transition-colors"
+                            oninput="window.updateState('${uniqueId}', 'obs', this.value)">
+                        </div>
+                    `;
+                    section.appendChild(itemDiv);
+                });
+                container.appendChild(section);
             }
         }
         
-        function updateStatus(online, msg) {
-            const el = document.getElementById('connectionStatus');
-            if(online) el.innerHTML = `<i class="fas fa-wifi text-green-500"></i> <span class="text-green-700 font-bold">${msg}</span>`;
-            else el.innerHTML = `<i class="fas fa-exclamation-triangle text-red-500"></i> <span class="text-red-700 font-bold">${msg}</span>`;
-        }
-        
-        initAuth();
+        renderForm();
 
-        // Dados
-        const contentStructure = {
-            headlines: ["Bem vindo a Era da Face Moderna.", "Mito Quebrado: Lesão Neural Zero.", "Taxa zero de lesão nervosa permanente em 212 casos.", "À prova de erros catastróficos. Literalmente.", "0% de lesão nervosa em 212 casos. Sua técnica consegue isso?", "Endoscópio: 2-5% lesão neural. Visão Direta: 0%. Você escolhe.", "3% complicações vs 12% (literatura endoscópica). Adivinha qual.", "3-4x MAIS SEGURO não é opinião. É DADO.", "Domine em 30 Casos, Não em 10 Anos.", "18 Anos [de experiência do Dr. Robério] em 30 Casos.", "A Solução Definitiva para Bioestimuladores.", "Juventude Restaurada em 7 Dias.", "Recuperação 50% mais rápida (retorno às atividades em 7 dias).", "Isso não é guerra. É MASSACRE.", "A Morte do Endomidface Tradicional.", "Segurança Máxima Garantida. Risco Quase Zero.", "Por que a Maestria Tátil Sistematizada Supera a Câmera Endoscópica.", "A Evolução da Cirurgia Facial: Uma História em Três Eras.", "Do Medo à Maestria: O Fim da Curva de Aprendizado Longa.", "Zero Lesão Nervosa Permanente em 212 Casos. Como é Possível?"],
-            phrases: ["Não é sorte. É PROTOCOLO.", "Não 'garantimos'. ENTREGAMOS.", "Se houver resistência, você está no plano errado.", "Seu GPS Tátil para a Anatomia.", "Da Intuição à Prova Científica.", "Sistema estruturado = Mais EFICIENTE de aprender.", "Navegue com segurança em casos de fibrose pós-bioestimulador.", "Biofillers são seu pesadelo? Temos a solução documentada.", "Biofiller não é contraindicação. É onde Direct Vision® BRILHA.", "Ideal para o paciente que queixa a queda do terço médio.", "Seu paciente volta ao trabalho em 7 dias ou 21? Faça a conta.", "Menos trauma = Menos edema = Recuperação mais rápida.", "Não é exagero. É FÍSICA.", "O tato te diz na hora se você está no lugar certo ou não.", "Sunk Cost é passado. ROI é futuro.", "Velha Guarda (Nokia, Blackberry) Face Moderna® (iPhone).", "Aprenda UM SISTEMA do criador que resolveu TUDO.", "Respeite a história. Mas não viva nela.", "Face Moderna® não compete com Deep Plane. Ela o substitui.", "Não é mágica. É visão.", "3 bilhões de anos de evolução do olho humano são superiores a uma câmera de $80k.", "ROI emocional: IMPAGÁVEL."],
-            quotes: ["É como separar páginas de livro molhado.", "Por que câmera de $80k perde para tato humano?", "'18 anos de experiência em 30 casos' não é mágica. É ENGENHARIA de ensino.", "Passei 20 anos quebrando paradigmas para que você não precise de 20 anos para dominar a cirurgia facial de elite.", "Excelência em cirurgia facial não deveria ser um segredo guardado por poucos. Nossa missão é socializá-la.", "Democratizar a segurança no plano profundo. Essa é a nossa verdadeira revolução.", "O objetivo não é criar seguidores. É formar mestres.", "Este método não foi criado para ser um 'dom'. Foi desenhado para ser um protocolo ensinável.", "Eu sei exatamente o que é sentir o medo paralisante do plano profundo. Este método é o mapa que eu gostaria de ter recebido no início da minha carreira.", "Meu papel não é te dar 'coragem'. É te dar um método tão seguro que a coragem se torna irrelevante.", "A evolução não pede permissão. Ela simplesmente acontece. E você escolhe: evoluir junto ou ficar para trás.", "O vídeo é como se você tivesse que cortar uma cenoura olhando para uma televisão. Não para a sua mão. O nosso método supera esse gap."],
-            others: ["Navegação Segura no Plano Profundo em Áreas de Alto Risco.", "A orientação é feita pela palpação de cinco marcos ósseos-chave.", "Por Que a Maestria Tátil Sistematizada Supera a Câmera Endoscópica e Liberta o Cirurgião.", "A maestria não é sobre não ter dúvidas. É sobre ter um sistema que te dá as respostas certas quando elas aparecem.", "Você não está comprando um curso. Você está comprando 18 anos de noites mal dormidas, obsessão por detalhes e mais de 1.500 casos resolvidos.", "Não estamos comparando técnicas. Estamos comparando um sistema integrado contra um conjunto de ferramentas fragmentadas.", "Perguntar se a Visão Direta é 'melhor' que o endoscópio é como perguntar se o iPhone é um 'Nokia melhor'. Não é uma melhora. É uma nova categoria.", "A era das soluções isoladas para a face acabou. O futuro pertence aos sistemas que entregam resultados globais.", "Enquanto outros vendem o mapa de uma cidade, nós entregamos o GPS que funciona no mundo inteiro.", "Se a pessoa falar assim: 'eu só opero com anestesia local'. Pronto, exclui todo mundo. Todos vão perder de mim.", "O endomidface endoscópico foi revolucionário... nos anos 90.", "Aceitar complicações 'inerentes à técnica' não é mais aceitável quando existe alternativa sem complicações.", "A diferença entre boa medicina e excelência: Boa medicina usa o que sempre funcionou. Excelência usa o que funciona MELHOR.", "Se você ainda depende de uma torre endoscópica para operar midface em 2025... seus pacientes merecem saber que existe outra forma.", "Não é sobre desrespeitar o passado. É sobre não ficar preso nele.", "30 anos atrás, endomidface era vanguarda. Hoje, é histórico.", "Técnicas dos anos 90 para pacientes dos anos 2020? Não faz sentido.", "O que era impossível sem endoscópio em 1995 é rotineiro por visão direta em 2025.", "Bem vindo a Era da Face Moderna: uma nova escola de pensamento, desenhada para os desafios da face contemporânea.", "Aqui, formamos a próxima geração de cirurgiões na metodologia que transformou a especialidade.", "DADOS: Taxa de Lesão Nervosa: 0% em 212 casos (Face Moderna) vs. 2-5% (Endoscópio).", "DADOS: Complicações Gerais: 3% vs. 12% (literatura endoscópica).", "DADOS: Recuperação: Retorno em 7 dias (Face Moderna) vs. 21 dias (Tradicional).", "DADOS: Tempo Cirúrgico: 1h30 - 3h (Face Moderna) vs. 4-8h (Endoscópico).", "OBJEÇÃO: 'Deep Plane é o padrão-ouro...' -> RESPOSTA: ERA o padrão-ouro em 2005.", "OBJEÇÃO: 'Visão direta não alcança o mesmo plano...' -> RESPOSTA: Mito. Alcançamos com mais segurança (GPS Tátil).", "OBJEÇÃO: 'Curva de aprendizado curta parece irreal.' -> RESPOSTA: Não é mágica, é Engenharia de Ensino.", "OBJEÇÃO: 'Já investi R$ 80k em equipamento.' -> RESPOSTA: Sunk Cost Fallacy. Olhe para o ROI futuro.", "ESTRATÉGIA: Reconhecer o passado com respeito, Educar sobre limitações, Posicionar como evolução inevitável."]
-        };
-        const sectionTitles = {headlines: "1. Headlines", phrases: "2. Frases", quotes: "3. Citações", others: "4. Argumentos"};
-
-        // Render
-        const container = document.getElementById('formContent');
-        for (const [key, items] of Object.entries(contentStructure)) {
-            const section = document.createElement('div');
-            section.className = "bg-white p-4 rounded-lg border shadow-sm";
-            section.innerHTML = `<h3 class="text-lg font-bold sticky top-[60px] bg-white z-10 py-2 border-b">${sectionTitles[key]}</h3>`;
-            items.forEach((text, index) => {
-                const uid = `${key}_${index}`;
-                section.innerHTML += `
-                    <div class="py-6 border-b last:border-0">
-                        <p class="mb-3 text-lg font-medium">"${text}"</p>
-                        <div class="flex flex-col gap-3">
-                            <div class="flex gap-2 w-full">
-                                <input type="radio" id="a_${uid}" name="s_${uid}" value="approved" class="status-radio hidden" onchange="upd('${uid}','status','approved')">
-                                <label for="a_${uid}" class="approve-label flex-1 px-4 py-3 rounded border text-center cursor-pointer select-none"><i class="fas fa-check"></i> Aprovar</label>
-                                <input type="radio" id="r_${uid}" name="s_${uid}" value="rejected" class="status-radio hidden" onchange="upd('${uid}','status','rejected')">
-                                <label for="r_${uid}" class="reject-label flex-1 px-4 py-3 rounded border text-center cursor-pointer select-none"><i class="fas fa-times"></i> Reprovar</label>
-                            </div>
-                            <input type="text" placeholder="Observação..." class="p-3 border rounded bg-slate-50 w-full" oninput="upd('${uid}','obs',this.value)">
-                        </div>
-                    </div>`;
-            });
-            container.appendChild(section);
-        }
-
-        window.upd = (id, field, value) => {
+        window.updateState = (id, field, value) => {
             if (!checklistData[id]) checklistData[id] = {};
             checklistData[id][field] = value;
-            const [sec, idx] = id.split('_');
-            checklistData[id].text = contentStructure[sec][parseInt(idx)];
+            checklistData[id].text = getTextById(id);
         };
 
+        function getTextById(id) {
+            const [section, index] = id.split('_');
+            return contentStructure[section][parseInt(index)];
+        }
+
         window.submitToCloud = async () => {
-            const total = Object.keys(checklistData).length;
-            if (total === 0) return alert('Por favor, responda pelo menos um item antes de enviar.');
-            
-            if(!confirm(`Enviar ${total} respostas?`)) return;
+            if (!currentUser) {
+                showToast('error', 'Sem conexão. Recarregue a página.');
+                return;
+            }
+            const totalItems = Object.keys(checklistData).length;
+            if (totalItems === 0) {
+                showToast('error', 'Responda pelo menos um item.');
+                return;
+            }
+            if (!confirm(`Enviar ${totalItems} avaliações agora?`)) return;
 
             document.getElementById('loadingOverlay').classList.remove('hidden');
 
             try {
-                // Tenta enviar mesmo que currentUser seja nulo (cria um user fake se precisar)
-                const uid = currentUser ? currentUser.uid : 'user_desconhecido_' + Date.now();
-                
                 await addDoc(collection(db, "checklist_submissions"), {
                     submittedAt: Timestamp.now(),
-                    userId: uid,
+                    userId: currentUser.uid,
                     answers: checklistData,
                     stats: {
                         approved: Object.values(checklistData).filter(i => i.status === 'approved').length,
                         rejected: Object.values(checklistData).filter(i => i.status === 'rejected').length,
-                        total: total
+                        total: totalItems
                     }
                 });
-                
                 document.getElementById('loadingOverlay').classList.add('hidden');
-                alert("SUCESSO! ✅\n\nAs respostas foram salvas no banco de dados.");
-                
+                showToast('success', 'Sucesso! Dados enviados.');
+                setTimeout(() => alert("Dados enviados com sucesso!"), 500);
             } catch (e) {
                 console.error(e);
                 document.getElementById('loadingOverlay').classList.add('hidden');
-                alert(`ERRO AO SALVAR ❌\n\nDetalhe do erro: ${e.message}\n\nTire um print e envie para o suporte.`);
+                showToast('error', 'Erro ao enviar. Verifique conexão.');
             }
         };
 
-        // Admin
-        window.toggleAdminLogin = () => { if(prompt("Senha:") === "admin123") { document.getElementById('viewChecklist').classList.add('hidden'); document.getElementById('viewAdmin').classList.remove('hidden'); loadSubmissions(); }};
-        window.exitAdmin = () => location.reload();
-        
-        window.loadSubmissions = async () => {
-            const tbody = document.getElementById('submissionsTableBody');
-            tbody.innerHTML = '<tr><td class="p-4 text-center">Carregando...</td></tr>';
-            try {
-                const snap = await getDocs(query(collection(db, "checklist_submissions"), orderBy("submittedAt", "desc")));
-                tbody.innerHTML = snap.empty ? '<tr><td class="p-4 text-center">Sem dados.</td></tr>' : '';
-                snap.forEach(doc => {
-                    const d = doc.data();
-                    const date = d.submittedAt?.toDate().toLocaleString() || 'Data desc.';
-                    tbody.innerHTML += `
-                        <tr class="border-b">
-                            <td class="p-3">
-                                <div class="font-bold">${date}</div>
-                                <div class="text-xs text-slate-500">Aprovados: <span class="text-green-600 font-bold">${d.stats?.approved || 0}</span></div>
-                                <button class="text-blue-600 font-bold text-xs mt-1" onclick='showDet(${JSON.stringify(d.answers)})'>VER DETALHES</button>
-                            </td>
-                        </tr>`;
-                });
-            } catch(e) { tbody.innerHTML = `<tr><td class="p-4 text-red-500">Erro: ${e.message}</td></tr>`; }
+        // Admin Logic
+        window.toggleAdminLogin = () => {
+            const pass = prompt("Senha Admin:");
+            if (pass === "admin123") {
+                document.getElementById('viewChecklist').classList.add('hidden');
+                document.getElementById('viewAdmin').classList.remove('hidden');
+                document.getElementById('userActions').classList.add('hidden');
+                document.getElementById('adminActions').classList.remove('hidden');
+                document.getElementById('adminActions').classList.add('flex');
+                loadSubmissions();
+            }
         };
 
-        window.showDet = (ans) => {
-            const div = document.getElementById('detailContent');
-            div.innerHTML = '';
-            Object.values(ans).forEach(v => {
-                div.innerHTML += `<div class="p-2 border rounded ${v.status==='approved'?'bg-green-50 border-green-200':'bg-red-50 border-red-200'}">
-                    <div class="font-bold text-xs uppercase ${v.status==='approved'?'text-green-700':'text-red-700'}">${v.status==='approved'?'Aprovado':'Reprovado'}</div>
-                    <div class="text-sm italic my-1">"${v.text}"</div>
-                    ${v.obs ? `<div class="bg-white p-1 text-xs border">Obs: ${v.obs}</div>` : ''}
-                </div>`;
-            });
-            document.getElementById('submissionDetail').classList.remove('hidden');
+        window.exitAdmin = () => location.reload();
+
+        window.loadSubmissions = async () => {
+            const tbody = document.getElementById('submissionsTableBody');
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4">Carregando...</td></tr>';
+            try {
+                const q = query(collection(db, "checklist_submissions"), orderBy("submittedAt", "desc"));
+                const querySnapshot = await getDocs(q);
+                tbody.innerHTML = '';
+                if (querySnapshot.empty) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4">Sem dados.</td></tr>'; return;
+                }
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const date = data.submittedAt.toDate().toLocaleString('pt-BR');
+                    const obsCount = Object.values(data.answers).filter(a => a.obs && a.obs.trim() !== '').length;
+                    const row = document.createElement('tr');
+                    row.className = "bg-white border-b hover:bg-slate-50";
+                    row.innerHTML = `
+                        <td class="px-4 py-3 whitespace-nowrap">${date}</td>
+                        <td class="px-4 py-3 text-green-600 font-bold">${data.stats.approved}</td>
+                        <td class="px-4 py-3 text-red-600 font-bold">${data.stats.rejected}</td>
+                        <td class="px-4 py-3">${obsCount > 0 ? `<span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs">Obs</span>` : '-'}</td>
+                        <td class="px-4 py-3 text-right">
+                            <button class="text-blue-600 font-bold text-xs uppercase" onclick='window.viewDetail(${JSON.stringify(data.answers)})'>Ver</button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } catch (e) { console.error(e); }
         };
+
+        window.viewDetail = (answers) => {
+            const detailContainer = document.getElementById('detailContent');
+            detailContainer.innerHTML = '';
+            for (const [key, val] of Object.entries(answers)) {
+                const div = document.createElement('div');
+                div.className = `p-3 rounded border ${val.status === 'approved' ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`;
+                div.innerHTML = `
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-bold text-xs uppercase ${val.status === 'approved' ? 'text-green-800' : 'text-red-800'}">${val.status === 'approved' ? 'Aprovado' : 'Reprovado'}</span>
+                    </div>
+                    <p class="text-sm text-slate-700 italic">"${val.text}"</p>
+                    ${val.obs ? `<p class="mt-2 text-sm bg-white p-2 rounded border border-slate-200 shadow-sm text-slate-800"><strong>Nota:</strong> ${val.obs}</p>` : ''}
+                `;
+                detailContainer.appendChild(div);
+            }
+            document.getElementById('submissionDetail').classList.remove('hidden');
+            document.getElementById('submissionDetail').scrollIntoView({ behavior: 'smooth' });
+        };
+
+        function showToast(type, msg) {
+            const toast = document.getElementById('toast');
+            const content = document.getElementById('toastContent');
+            content.className = `bg-white border-l-4 p-4 rounded shadow-2xl flex items-center gap-3 w-full sm:min-w-[300px] ${type === 'success' ? 'border-green-500' : 'border-red-500'}`;
+            content.innerHTML = `<div class="${type === 'success' ? 'text-green-500' : 'text-red-500'}"><i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'} fa-lg"></i></div><div><p class="font-bold text-sm text-slate-800">${type === 'success' ? 'Sucesso' : 'Atenção'}</p><p class="text-sm text-slate-500">${msg}</p></div>`;
+            toast.classList.remove('hidden', '-translate-y-full', 'sm:translate-x-full');
+            setTimeout(() => { toast.classList.add('-translate-y-full', 'sm:translate-x-full'); setTimeout(() => toast.classList.add('hidden'), 300); }, 4000);
+        }
+        window.showToast = showToast;
+        window.updateState = updateState;
     </script>
 </body>
 </html>
